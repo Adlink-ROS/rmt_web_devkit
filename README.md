@@ -93,7 +93,7 @@ The default login account/password is ros/adlinkros.
 
 ## Development notes
 
-- Username/password of FastaPI
+- Username/password of FastAPI
 
     To change the default username and password of FastAPI server, please modify below codes in the file ```backend/app/app/core/security.py```
 
