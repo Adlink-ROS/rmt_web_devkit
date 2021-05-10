@@ -15,6 +15,9 @@
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-location-outline" @click="dialogShowWifi(true)">
         WiFi mode
       </el-button>
+      <el-button v-show="multipleSelection.length" v-waves class="filter-item" type="primary" icon="el-icon-set-up" @click="dialogShowGroup(true)">
+        Group Edit
+      </el-button>
     </div>
 
     <el-table
@@ -138,6 +141,13 @@
       @syncData="syncLocate"
     />
     <wifi-mode-component :dialog-show="panel_on_wifi" :wifi-set="temp_wifi" @dialogShowChange="dialogShowWifi" @syncData="syncWifi" />
+    <bulk-edit-component
+      :dialog-show="panel_on_group"
+      :device-list="multipleSelection"
+      :temp-wifi="temp_wifi"
+      @dialogShowChange="dialogShowGroup"
+      @syncData="syncGroupEdit"
+    />
   </div>
 </template>
 
@@ -148,10 +158,11 @@ import Pagination from '@/components/Pagination' // secondary package based on e
 import UploadExcelComponent from '@/components/UploadExcel/index_robot.vue'
 import ControlComponent from '@/components/ControlPanel/index.vue'
 import WifiModeComponent from '@/components/WiFiMode/index.vue'
+import BulkEditComponent from '@/components/BulkEdit/index.vue'
 
 export default {
   name: 'ComplexTable',
-  components: { Pagination, UploadExcelComponent, ControlComponent, WifiModeComponent },
+  components: { Pagination, UploadExcelComponent, ControlComponent, WifiModeComponent, BulkEditComponent },
   directives: { waves },
   data() {
     return {
@@ -187,6 +198,7 @@ export default {
         index: undefined
       },
       locate_list: [],
+      panel_on_group: false,
       dialogFormVisible: false,
       panel_on_control: false,
       panel_on_wifi: false,
@@ -289,6 +301,17 @@ export default {
     },
     syncWifi() {
       this.wifi_set = Object.assign({}, this.temp_wifi)
+    },
+
+    // Function for bulk edit component
+    dialogShowGroup(val) {
+      if (val) { this.temp_wifi = { 'ssid': this.wifi_set.ssid, 'password': this.wifi_set.password } }
+      this.panel_on_group = val
+    },
+    syncGroupEdit() {
+      this.multipleSelection.forEach(element => {
+        this.client_list[element.DeviceID] = Object.assign({}, this.temp_wifi)
+      })
     },
 
     // Send request for config edit panel and update table
