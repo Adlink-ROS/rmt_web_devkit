@@ -5,6 +5,9 @@
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList()">
         Search
       </el-button>
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-refresh" style="width: 110px" @click="list=[]">
+        Clear
+      </el-button>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload()">
         Export
       </el-button>
@@ -70,10 +73,10 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="pageSetting.page" :limit.sync="pageSetting.limit" @pagination="getList" />
 
     <el-dialog title="Export Excel" :visible.sync="downloadLoading">
-      <el-form ref="dataForm" :rules="rules" label-position="left" label-width="80px" style="width: 400px; margin-left:50px;">
+      <el-form ref="dataForm" label-position="left" label-width="80px" style="width: 400px; margin-left:50px;">
         <el-form-item label="File name">
           <el-input v-model="filename" />
         </el-form-item>
@@ -104,13 +107,16 @@
             </el-form-item>
           </el-form>
         </el-tab-pane>
-        <el-tab-pane label="WiFi" name="WiFi">WiFi Settings
-          <el-form ref="dataForm" :model="wifi_client" label-position="left" label-width="90px" style="width: 400px; margin-left:50px; margin-top:20px">
+        <el-tab-pane label="WiFi" name="WiFi">RMT WiFi Client Configuration Settings
+          <el-form ref="dataForm" :model="temp_wifi" label-position="left" label-width="90px" style="width: 400px; margin-left:50px; margin-top:20px">
+            <el-form-item>
+              <el-checkbox v-model="sameAsAP" border @change="wifi_to_ap">Same as AP Server</el-checkbox>
+            </el-form-item>
             <el-form-item label="SSID">
-              <el-input v-model="wifi_client.ssid" />
+              <el-input v-model="temp_wifi.ssid" maxlength="32" show-word-limit @input="wifi_diff" />
             </el-form-item>
             <el-form-item label="Password">
-              <el-input v-model="wifi_client.password" show-password />
+              <el-input v-model="temp_wifi.password" show-password minlength="8" maxlength="32" @input="wifi_diff" />
             </el-form-item>
           </el-form>
         </el-tab-pane>
@@ -136,7 +142,7 @@
 </template>
 
 <script>
-import { fetchRobotList, set_config_diff, fetchWifi } from '@/api/robots'
+import { fetchRobotList, set_config_diff, get_config_all, fetchWifi } from '@/api/robots'
 import waves from '@/directive/waves' // waves directive
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import UploadExcelComponent from '@/components/UploadExcel/index_robot.vue'
@@ -155,13 +161,14 @@ export default {
       multipleSelection: [],
       downloadLoading: false,
       checkAll: false,
+      sameAsAP: false,
       filename: '',
       ParamOption: [],
       checkedParams: [],
       isIndeterminate: true,
       listLoading: true,
       wait_request: false,
-      listQuery: {
+      pageSetting: {
         page: 1,
         limit: 20
       },
@@ -171,11 +178,11 @@ export default {
         band: '2.4 GHz',
         hotspot_enable: false
       },
-      wifi_client: {
+      client_list: {},
+      temp_wifi: {
         ssid: '',
         password: ''
       },
-      temp_wifi: {},
       temp: {
         index: undefined
       },
@@ -183,25 +190,37 @@ export default {
       dialogFormVisible: false,
       panel_on_control: false,
       panel_on_wifi: false,
-      default_tab: 'Config',
-      rules: {}
+      default_tab: 'Config'
     }
   },
   created() {
-    this.getList()
     fetchWifi().then(response => {
       this.wifi_set = response.data
+      this.getList()
     })
   },
   methods: {
     getList() {
       this.listLoading = true
-      fetchRobotList(this.listQuery).then(response => {
+      var config = { 'config_list': ['wifi'] }
+      fetchRobotList().then(response => {
         this.list = response.data.items
         this.total = response.data.total
         this.locate_list = Array(this.total).fill('off')
+      }).then(get_config_all(config).then(response => {
+        Object.keys(response.data).forEach((element) => {
+          var wifi_char = response.data[element].wifi.split(' ')
+          if (wifi_char.length === 4) {
+            this.client_list[element] = { 'ssid': wifi_char[1], 'password': wifi_char[3] }
+          } else {
+            this.$message({
+              message: 'Agent WiFi Client Got Error',
+              type: 'warning'
+            })
+          }
+        })
         this.listLoading = false
-      })
+      }))
     },
 
     // Handle agents selection in table
@@ -273,8 +292,20 @@ export default {
     },
 
     // Send request for config edit panel and update table
+    wifi_to_ap(val) {
+      if (val) {
+        this.temp_wifi = Object.assign({}, this.wifi_set)
+      } else {
+        this.temp_wifi = Object.assign({}, this.client_list[this.temp.DeviceID])
+      }
+    },
+    wifi_diff() {
+      this.sameAsAP = false
+    },
     handleUpdate(row) {
       this.temp = Object.assign({}, row) // copy obj
+      this.temp_wifi = Object.assign({}, this.client_list[this.temp.DeviceID])
+      this.sameAsAP = false
       this.dialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
@@ -285,10 +316,13 @@ export default {
         if (valid) {
           this.wait_request = true
           var tempData = { 'device_config_json': { [this.temp.DeviceID]: {}}}
+          var wifi_client_config = `${this.temp_wifi.ssid} ${this.temp_wifi.password}`
           tempData['device_config_json'][this.temp.DeviceID]['hostname'] = this.temp.Hostname
+          tempData['device_config_json'][this.temp.DeviceID]['wifi'] = wifi_client_config
           set_config_diff(tempData).then(() => {
             const index = this.list.findIndex(v => v.DeviceID === this.temp.DeviceID)
             this.list.splice(index, 1, this.temp)
+            this.client_list[this.temp.DeviceID] = Object.assign({}, this.temp_wifi)
             this.wait_request = false
             this.dialogFormVisible = false
             this.$notify({
