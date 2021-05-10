@@ -14,7 +14,7 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-
 
 # Download source codes and remove frontend files
 RUN cd /root/ && \
-    git clone https://github.com/QQting/rmt_web_devkit && \
+    git clone https://github.com/Adlink-ROS/rmt_web_devkit && \
     rm -rf rmt_web_devkit/frontend
 
 # Install RMT lib from deb file
