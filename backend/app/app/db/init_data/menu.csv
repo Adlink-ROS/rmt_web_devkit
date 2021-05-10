@@ -1,0 +1,9 @@
+id,path,component,external_link,name,title,icon,no_cache,affix,order,parent_id
+519,/system,,False,,系统管理,system,False,False,1,
+516,role,/system/permission/role,False,RolePermission,角色权限,peoples,True,False,5,519.0
+520,menu,/system/menu/index,False,Menu,菜单管理,tree-table,False,False,2,519.0
+522,dict,/system/dict/index,False,DictType,字典管理,dict,False,False,4,519.0
+524,department,/system/department/index,False,Department,部门管理,tree,False,False,3,519.0
+525,user,/system/user/index,False,User,用户管理,user,False,False,1,519.0
+526,/monitor,,False,,系统监控,monitor,False,False,2,
+527,server,/monitor/server/index,False,Server,服务监控,dashboard,False,False,1,526.0

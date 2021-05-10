@@ -1,0 +1,23 @@
+ 
+ -------------- celery@roscube v5.0.5 (singularity)
+--- ***** ----- 
+-- ******* ---- Linux-5.8.0-48-generic-x86_64-with-glibc2.29 2021-04-07 15:36:26
+- *** --- * --- 
+- ** ---------- [config]
+- ** ---------- .> app:         worker:0x7f670f698c70
+- ** ---------- .> transport:   redis://127.0.0.1:6379/1
+- ** ---------- .> results:     redis://127.0.0.1:6379/0
+- *** --- * --- .> concurrency: 1 (prefork)
+-- ******* ---- .> task events: OFF (enable -E to monitor tasks in this worker)
+--- ***** ----- 
+ -------------- [queues]
+                .> example-queue    exchange=example-queue(direct) key=example-queue
+                
+
+[tasks]
+  . app.celery_app.worker.example.test_celery
+
+[2021-04-07 15:36:26,461: INFO/MainProcess] Connected to redis://127.0.0.1:6379/1
+[2021-04-07 15:36:26,477: INFO/MainProcess] mingle: searching for neighbors
+[2021-04-07 15:36:27,507: INFO/MainProcess] mingle: all alone
+[2021-04-07 15:36:27,521: INFO/MainProcess] celery@roscube ready.
