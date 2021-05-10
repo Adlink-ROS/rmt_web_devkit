@@ -16,7 +16,7 @@ Download this repo and install dependent packages
 
     ```bash
     cd $HOME
-    git clone https://github.com/QQting/rmt_web_devkit.git
+    git clone https://github.com/Adlink-ROS/rmt_web_devkit.git
     cd $HOME/rmt_web_devkit/frontend
     npm install
     ```
@@ -36,7 +36,7 @@ There are two optons you can choose for the backend:
 Build image from Dockerfile:
 
 ```bash
-wget https://raw.githubusercontent.com/QQting/rmt_web_devkit/main/backend/Dockerfile
+wget https://raw.githubusercontent.com/Adlink-ROS/rmt_web_devkit/main/backend/Dockerfile
 docker build -t="rmt-backend" . 
 ```
 
@@ -72,7 +72,7 @@ Download this repo and install dependent packages
 
     ```bash
     cd $HOME
-    git clone https://github.com/QQting/rmt_web_devkit.git
+    git clone https://github.com/Adlink-ROS/rmt_web_devkit.git
 
     cd $HOME/rmt_web_devkit/backend/lib
     sudo dpkg -i *.deb
