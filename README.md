@@ -8,18 +8,20 @@ The Web example for ADLINK ROS Management Tool (RMT) on Ubuntu 20.04
 
 Install the tools and packages for development
 
-    ```bash
-    sudo apt update
-    sudo apt install -y git npm
-    ```
+```bash
+sudo apt update
+sudo apt install -y git npm
+```
+
 Download this repo and install dependent packages
 
-    ```bash
-    cd $HOME
-    git clone https://github.com/Adlink-ROS/rmt_web_devkit.git
-    cd $HOME/rmt_web_devkit/frontend
-    npm install
-    ```
+```bash
+cd $HOME
+git clone https://github.com/Adlink-ROS/rmt_web_devkit.git
+cd $HOME/rmt_web_devkit/frontend
+npm install
+```
+    
 Start the frontend
 
 ```bash
@@ -63,24 +65,24 @@ http://0.0.0.0:8080/docs
 
 Install the tools and packages for development
 
-    ```bash
-    sudo apt update
-    sudo apt install -y git python-is-python3 curl
-    ```
+```bash
+sudo apt update
+sudo apt install -y git python-is-python3 curl
+```
 
 Download this repo and install dependent packages
 
-    ```bash
-    cd $HOME
-    git clone https://github.com/Adlink-ROS/rmt_web_devkit.git
+```bash
+cd $HOME
+git clone https://github.com/Adlink-ROS/rmt_web_devkit.git
 
-    cd $HOME/rmt_web_devkit/backend/lib
-    sudo dpkg -i *.deb
+cd $HOME/rmt_web_devkit/backend/lib
+sudo dpkg -i *.deb
 
-    cd $HOME/rmt_web_devkit/backend/app
-    curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
-    poetry install
-    ```
+cd $HOME/rmt_web_devkit/backend/app
+curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+poetry install
+```
 
 Start the backend
 
