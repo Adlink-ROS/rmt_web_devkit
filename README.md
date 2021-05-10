@@ -4,16 +4,15 @@ The Web example for ADLINK ROS Management Tool (RMT) on Ubuntu 20.04
 
 ## **Frontend**
 
-### Prepare for the development environment:
+### SOP:
 
-1. Install the tools and packages for development
+Install the tools and packages for development
 
     ```bash
     sudo apt update
     sudo apt install -y git npm
     ```
-
-2. Download this repo and install dependent packages
+Download this repo and install dependent packages
 
     ```bash
     cd $HOME
@@ -21,7 +20,7 @@ The Web example for ADLINK ROS Management Tool (RMT) on Ubuntu 20.04
     cd $HOME/rmt_web_devkit/frontend
     npm install
     ```
-### SOP to start the frontend:
+Start the frontend
 
 ```bash
 cd $HOME/rmt_web_devkit/frontend
@@ -60,18 +59,16 @@ Then, open the URL in the host browser
 http://0.0.0.0:8080/docs
 ```
 
-Now, you can test the RESTful API.
+### Option 2 - Setup the Env on host:
 
-### Option 2 - Prepare for the development environment:
-
-1. Install the tools and packages for development
+Install the tools and packages for development
 
     ```bash
     sudo apt update
     sudo apt install -y git python-is-python3 curl
     ```
 
-2. Download this repo and install dependent packages
+Download this repo and install dependent packages
 
     ```bash
     cd $HOME
@@ -85,9 +82,29 @@ Now, you can test the RESTful API.
     poetry install
     ```
 
-### SOP to start the backend:
+Start the backend
 
 ```bash
 cd $HOME/rmt_web_devkit/backend
 ./start_backend.sh
 ```
+
+The default login account/password is ros/adlinkros.
+
+## Development notes
+
+- Username/password of FastaPI
+
+    To change the default username and password of FastAPI server, please modify below codes in the file ```backend/app/app/core/security.py```
+
+    ```py
+    fake_users_db = {
+        "ros": {
+            "username": "ros",
+            "full_name": "ros",
+            "email": "ros@example.com",
+            "hashed_password": "$2b$12$5Yy4jwGIXsbwM9NMaWloPOfKDsVE2YBH/Uqjrorl28zRY032BcRDu",
+            "disabled": False,
+        }
+    }
+    ```
