@@ -208,8 +208,7 @@ export default {
   created() {
     fetchWifi().then(response => {
       this.wifi_set = response.data
-      this.getList()
-    })
+    }).then(this.getList())
   },
   methods: {
     getList() {
@@ -219,7 +218,7 @@ export default {
         this.list = response.data.items
         this.total = response.data.total
         this.locate_list = Array(this.total).fill('off')
-      }).then(get_config_all(config).then(response => {
+      }).then(() => get_config_all(config)).then(response => {
         Object.keys(response.data).forEach((element) => {
           var wifi_char = response.data[element].wifi.split(' ')
           if (wifi_char.length === 4) {
@@ -232,7 +231,7 @@ export default {
           }
         })
         this.listLoading = false
-      }))
+      })
     },
 
     // Handle agents selection in table
