@@ -9,6 +9,10 @@ import random
 import time
 
 @pytest.fixture(scope="module", autouse=True)
+def change_dir():
+    os.chdir("../../../../../lib")
+
+@pytest.fixture(scope="module", autouse=True)
 def agent_start_id():
     return random.randint(0,500)
 
