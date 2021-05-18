@@ -35,6 +35,16 @@ There are two optons you can choose for the backend:
 
 ### Option 1 - Docker container
 
+Add docker into sudo group (Optional):
+
+```bash
+sudo groupadd docker
+sudo gpasswd -a $USER docker
+# After logout and login
+groups
+# You'll see the current user belongs to docker group
+```
+
 Build image from Dockerfile:
 
 ```bash
