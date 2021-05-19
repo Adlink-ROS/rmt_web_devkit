@@ -92,6 +92,10 @@ sudo dpkg -i *.deb
 cd $HOME/rmt_web_devkit/backend/app
 curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
 poetry install
+# Optional: if you want to install packages in native system
+python3 -m pip install --upgrade pip
+poetry export -f requirements.txt --output requirements.txt
+pip install -r requirements.txt
 ```
 
 Start the backend
