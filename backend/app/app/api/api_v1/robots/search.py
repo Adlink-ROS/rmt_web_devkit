@@ -33,11 +33,12 @@ def rmt_discovery():
             "RMT_VERSION": dev_list[i].rmt_version
         }
         items.append(item)
-
-    print("=== data ===")
     data["items"] = items
-    result = json.dumps(data, indent=4)
-    print(result)
+
+    # DEBUG
+    # print("=== data ===")
+    # result = json.dumps(data, indent=4)
+    # print(result)
 
     # TODO: free dev_list
     # rmt_py_wrapper.rmt_server_free_device_list(dev_list)

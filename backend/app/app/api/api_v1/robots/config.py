@@ -111,8 +111,11 @@ def rmt_set_same_config_by_id(target_list, target_num, config_dict):
                 value = key_value_pair[1]
                 device_dict[key] = value
         config_data[device_id] = device_dict
-    result = json.dumps(config_data, indent=4)
-    print(result)
+
+    # DEBUG 
+    # result = json.dumps(config_data, indent=4)
+    # print(result)
+
     return config_data
 
 def rmt_set_diff_config_by_id(device_config_json):
@@ -159,8 +162,11 @@ def rmt_set_diff_config_by_id(device_config_json):
                 value = key_value_pair[1]
                 device_dict[key] = value
         config_data[device_id] = device_dict
-    result = json.dumps(config_data, indent=4)
-    print(result)
+        
+    # DEBUG 
+    # result = json.dumps(config_data, indent=4)
+    # print(result)
+
     return config_data
 
 def rmt_set_seq_config_by_id(device_list, config_dict):
@@ -212,8 +218,11 @@ def rmt_set_seq_config_by_id(device_list, config_dict):
                 value = key_value_pair[1]
                 device_dict[key] = value
         config_data[device_id] = device_dict
-    result = json.dumps(config_data, indent=4)
-    print(result)
+
+    # DEBUG 
+    # result = json.dumps(config_data, indent=4)
+    # print(result)
+
     return config_data
 
 def rmt_discovery():

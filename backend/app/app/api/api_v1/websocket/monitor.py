@@ -117,7 +117,9 @@ class ServerNamespace(socketio.AsyncNamespace):
             items.append(dict_data)                 
 
         data["items"] = items
-        result = json.dumps(data, indent=4)
-        print(result)
+
+        # DEBUG
+        # result = json.dumps(data, indent=4)
+        # print(result)
 
         return data
