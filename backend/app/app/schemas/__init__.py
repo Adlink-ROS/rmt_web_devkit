@@ -6,5 +6,6 @@ from .role import *
 from .system.menu import *
 from .system.dict import *
 from .system.department import *
-from .robots.wifi import *
 from .robots.config import *
+from .robots.file import *
+from .robots.wifi import *

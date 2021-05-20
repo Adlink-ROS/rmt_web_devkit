@@ -14,8 +14,6 @@ import subprocess
 router = APIRouter()
 
 def rmt_discovery():
-    rmt_py_wrapper.rmt_server_init()
-
     num_ptr = rmt_py_wrapper.new_intptr()
     dev_list = rmt_py_wrapper.device_info_list.frompointer(rmt_py_wrapper.rmt_server_create_device_list(num_ptr))
     num = rmt_py_wrapper.intptr_value(num_ptr)
@@ -43,7 +41,6 @@ def rmt_discovery():
 
     # TODO: free dev_list
     # rmt_py_wrapper.rmt_server_free_device_list(dev_list)
-    rmt_py_wrapper.rmt_server_deinit()
 
     return data
 

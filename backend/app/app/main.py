@@ -15,6 +15,7 @@ from app.core.config import settings
 from app.api.api_v1.api import api_router
 from app.api.api_v1.websocket import socket_app
 from app.middleware import register_middleware
+import rmt_py_wrapper
 
 # app
 app = FastAPI(
@@ -30,4 +31,6 @@ app.mount('/', socket_app)
 
 if __name__ == '__main__':
     import uvicorn
+    rmt_py_wrapper.rmt_server_init()
     uvicorn.run(app='main:app', host="0.0.0.0", port=8080)
+    rmt_py_wrapper.rmt_server_deinit()

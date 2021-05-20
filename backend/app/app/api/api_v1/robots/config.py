@@ -217,7 +217,6 @@ def rmt_set_seq_config_by_id(device_list, config_dict):
     return config_data
 
 def rmt_discovery():
-    rmt_py_wrapper.rmt_server_init()
     num_ptr = rmt_py_wrapper.new_intptr()
     dev_list = rmt_py_wrapper.device_info_list.frompointer(rmt_py_wrapper.rmt_server_create_device_list(num_ptr))
     num = rmt_py_wrapper.intptr_value(num_ptr)
@@ -234,13 +233,11 @@ def get_config_for_all(config_req_body: schemas.GetConfigForAll_ReqBody) -> Any:
         code = 20000
     # TODO: free dev_list
     # rmt_py_wrapper.rmt_server_free_device_list(dev_list)
-    rmt_py_wrapper.rmt_server_deinit()
     return {"code": code, "data": data}
 
 @router.post("/get_same_config_by_id", response_model=schemas.Response)
 def get_same_config_by_id(config_req_body: schemas.GetSameConfigById_ReqBody) -> Any:
     code = 40400 # not found for default
-    rmt_py_wrapper.rmt_server_init()
     target_list = config_req_body.device_list
     config_list = config_req_body.config_list
     target_num = len(target_list)
@@ -251,7 +248,6 @@ def get_same_config_by_id(config_req_body: schemas.GetSameConfigById_ReqBody) ->
     print(data)
     # TODO: free dev_list
     # rmt_py_wrapper.rmt_server_free_device_list(dev_list)
-    rmt_py_wrapper.rmt_server_deinit()
     return {"code": code, "data": data}
 
 # @router.post("/get_diff_config_by_id", response_model=schemas.Response)
@@ -261,7 +257,6 @@ def get_same_config_by_id(config_req_body: schemas.GetSameConfigById_ReqBody) ->
 @router.put("/set_same_config_by_id", response_model=schemas.Response)
 def set_same_config_by_id(config_req_body: schemas.SetSameConfigById_ReqBody) -> Any:
     code = 40400 # not found for default
-    rmt_py_wrapper.rmt_server_init()
     target_list = config_req_body.device_list
     config_dict = config_req_body.config_dict
     target_num = len(target_list)
@@ -274,7 +269,6 @@ def set_same_config_by_id(config_req_body: schemas.SetSameConfigById_ReqBody) ->
 @router.put("/set_diff_config_by_id", response_model=schemas.Response)
 def set_diff_config_by_id(config_req_body: schemas.SetDiffConfigById_ReqBody) -> Any:
     code = 40400 # not found for default
-    rmt_py_wrapper.rmt_server_init()
     data = rmt_set_diff_config_by_id(config_req_body.device_config_json)
     if data:
         # found => 200 OK
@@ -284,7 +278,6 @@ def set_diff_config_by_id(config_req_body: schemas.SetDiffConfigById_ReqBody) ->
 @router.put("/set_sequential_config_by_id", response_model=schemas.Response)
 def set_seq_config_by_id(config_req_body: schemas.SetSequentialConfigById_ReqBody) -> Any:
     code = 40400 # not found for default
-    rmt_py_wrapper.rmt_server_init()
     device_list = config_req_body.device_list
     config_dict = config_req_body.numbering_config_start
     data = rmt_set_seq_config_by_id(device_list, config_dict)

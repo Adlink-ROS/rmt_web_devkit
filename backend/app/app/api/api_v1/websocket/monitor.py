@@ -75,8 +75,6 @@ class ServerNamespace(socketio.AsyncNamespace):
             await self.server.sleep(3)
 
     async def hardware_info(self):
-        rmt_py_wrapper.rmt_server_init()
-
         # Get device list:
         num_ptr = rmt_py_wrapper.new_intptr()
         dev_list = rmt_py_wrapper.device_info_list.frompointer(rmt_py_wrapper.rmt_server_create_device_list(num_ptr))
