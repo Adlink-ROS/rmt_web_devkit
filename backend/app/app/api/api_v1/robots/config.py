@@ -232,7 +232,7 @@ def rmt_discovery():
     rmt_py_wrapper.delete_intptr(num_ptr) # release num_ptr
     return dev_list, num
 
-@router.post("/get_config_for_all", response_model=schemas.Response, name="Get the config settings of all the devices")
+@router.post("/get_config_for_all", response_model=schemas.Response, summary="Get the config settings of all the devices")
 def get_config_for_all(config_req_body: schemas.GetConfigForAll_ReqBody) -> Any:
     code = 40400 # not found for default
     dev_list, num = rmt_discovery()
@@ -244,7 +244,7 @@ def get_config_for_all(config_req_body: schemas.GetConfigForAll_ReqBody) -> Any:
     # rmt_py_wrapper.rmt_server_free_device_list(dev_list)
     return {"code": code, "data": data}
 
-@router.post("/get_same_config_by_id", response_model=schemas.Response, name="Get the config settings of input devices")
+@router.post("/get_same_config_by_id", response_model=schemas.Response, summary="Get the config settings of input devices")
 def get_same_config_by_id(config_req_body: schemas.GetSameConfigById_ReqBody) -> Any:
     code = 40400 # not found for default
     target_list = config_req_body.device_list
@@ -263,7 +263,7 @@ def get_same_config_by_id(config_req_body: schemas.GetSameConfigById_ReqBody) ->
 # def get_diff_config_by_id(config_req_body: GetDiffConfigById_ReqBody) -> Any:
 #     pass
 
-@router.put("/set_same_config_by_id", response_model=schemas.Response, name="Configure the input settings to the target devices")
+@router.put("/set_same_config_by_id", response_model=schemas.Response, summary="Configure the input settings to the target devices")
 def set_same_config_by_id(config_req_body: schemas.SetSameConfigById_ReqBody) -> Any:
     code = 40400 # not found for default
     target_list = config_req_body.device_list
@@ -275,7 +275,7 @@ def set_same_config_by_id(config_req_body: schemas.SetSameConfigById_ReqBody) ->
         code = 20000
     return {"code": code, "data": data}
 
-@router.put("/set_diff_config_by_id", response_model=schemas.Response, name="Customize settings for each devices")
+@router.put("/set_diff_config_by_id", response_model=schemas.Response, summary="Customize settings for each devices")
 def set_diff_config_by_id(config_req_body: schemas.SetDiffConfigById_ReqBody) -> Any:
     code = 40400 # not found for default
     data = rmt_set_diff_config_by_id(config_req_body.device_config_json)
@@ -284,7 +284,7 @@ def set_diff_config_by_id(config_req_body: schemas.SetDiffConfigById_ReqBody) ->
         code = 20000
     return {"code": code, "data": data}
 
-@router.put("/set_sequential_config_by_id", response_model=schemas.Response, name="Configure sequential numbering settings for the target devices")
+@router.put("/set_sequential_config_by_id", response_model=schemas.Response, summary="Configure sequential numbering settings for the target devices")
 def set_seq_config_by_id(config_req_body: schemas.SetSequentialConfigById_ReqBody) -> Any:
     code = 40400 # not found for default
     device_list = config_req_body.device_list
