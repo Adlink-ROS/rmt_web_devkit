@@ -13,7 +13,7 @@ import time
 router = APIRouter()
 UPLOAD_PATH = "/tmp/rmt/"
 
-@router.get("/file_upload_list", response_model=schemas.Response)
+@router.get("/file_upload_list", response_model=schemas.Response, name="List all the uploaded files on the host server")
 def file_upload_list() -> Any:
     code = 20000
     data = {}
@@ -31,7 +31,7 @@ def file_upload_list() -> Any:
 
     return {"code": code, "data": data, "message": msg}
 
-@router.post("/file_upload_remove", response_model=schemas.Response)
+@router.post("/file_upload_remove", response_model=schemas.Response, name="Delete the uploaded file from the host server")
 def file_upload_remove(file_req_body: schemas.RemoveFile_ReqBody) -> Any:
     code = 40400 # not found for default
     data = {}
@@ -54,7 +54,7 @@ def file_upload_remove(file_req_body: schemas.RemoveFile_ReqBody) -> Any:
         
     return {"code": code, "data": data, "message": msg}
 
-@router.post("/file_upload_add", response_model=schemas.Response)
+@router.post("/file_upload_add", response_model=schemas.Response, name="Upload the file to the host server")
 def file_upload_add(myfile: UploadFile = File(...)) -> Any:
     code = 40400 # not found for default
     data = {}
@@ -89,7 +89,7 @@ def file_upload_add(myfile: UploadFile = File(...)) -> Any:
 
     return {"code": code, "data": data, "message": msg}
 
-@router.post("/file_upload_send_check", response_model=schemas.Response)
+@router.post("/file_upload_send_check", response_model=schemas.Response, name="Check the result of file transfering")
 def file_upload_send_check(file_req_body: schemas.SendFileCheck_ReqBody) -> Any:
     code = 40400 # not found for default
     data = {}
@@ -114,7 +114,7 @@ def file_upload_send_check(file_req_body: schemas.SendFileCheck_ReqBody) -> Any:
 
     return {"code": code, "data": data, "message": msg}
 
-@router.post("/file_upload_send", response_model=schemas.Response)
+@router.post("/file_upload_send", response_model=schemas.Response, name="Choose one of the uploaded files to be sent from the host server to the target devices")
 def file_upload_send(file_req_body: schemas.UploadFileById_ReqBody) -> Any:
     code = 20000
     data = {}
@@ -154,7 +154,7 @@ def file_upload_send(file_req_body: schemas.UploadFileById_ReqBody) -> Any:
 
     return {"code": code, "data": data, "message": msg}
 
-@router.post("/file_download", response_model=schemas.Response)
+@router.post("/file_download", response_model=schemas.Response, name="Directly download a file from the target device")
 def file_download(file_req_body: schemas.DownloadFileById_ReqBody) -> Any:
     device_id = int(file_req_body.device_id)
     callback = file_req_body.callback

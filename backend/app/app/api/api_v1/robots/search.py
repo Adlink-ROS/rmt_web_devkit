@@ -46,7 +46,7 @@ def rmt_discovery():
     return data
 
 
-@router.get("/discovery", response_model=schemas.Response)
+@router.get("/discovery", response_model=schemas.Response, name="Show current online devices")
 def get_robots_list() -> Any:
     robot_data = rmt_discovery()
     return {"code": 20000, "data": robot_data}
@@ -64,7 +64,7 @@ def modify_ap_config(ssid, password, band):
     result = subprocess.run(["nmcli", "con", "modify", "RMTHost", "802-11-wireless-security.psk", str(password)], stdout=subprocess.PIPE)
     return result
 
-@router.post("/set_wifi_hotspot", response_model=schemas.Response)
+@router.post("/set_wifi_hotspot", response_model=schemas.Response, name="Enable WiFi Hotspot on host server")
 def set_wifi_hotspot_mode(wifi_mode: schemas.WifiMode) -> Any:
     wifi_set = {"hotspot_enable": wifi_mode.hotspot_enable, "ssid": wifi_mode.ssid, "password": wifi_mode.password, "band": wifi_mode.band}
     result = subprocess.run(["nmcli", "-t", "-f", "NAME", "con", "show", "--active"], stdout=subprocess.PIPE)
@@ -90,7 +90,7 @@ def set_wifi_hotspot_mode(wifi_mode: schemas.WifiMode) -> Any:
 
     return {"code": 20000, "data": result.stdout.decode('utf-8').rstrip("\n")}
 
-@router.get("/get_wifi_hotspot", response_model=schemas.Response)
+@router.get("/get_wifi_hotspot", response_model=schemas.Response, name="Get WiFi hotspot settings on host server")
 def get_wifi_hotspot_mode():
     if "RMTHost.nmconnection" not in os.listdir("/etc/NetworkManager/system-connections"):
         wifi_data = {
