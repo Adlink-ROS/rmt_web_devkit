@@ -1,6 +1,8 @@
 import os
 import sys, getopt
 import re
+import psutil
+import socket
 
 # TO SUPPORT RUN python main.py in windows,but I use python "app/main.py" to start in liunx
 os.sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -31,20 +33,25 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 # set socketio
 app.mount('/', socket_app)
 
-def valid_ip(Ip):
+def valid_ip(ip):
     # pass the regular expression
     # and the string in search() method
     regex = "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
-    if(re.search(regex, Ip)):
+    if(re.search(regex, ip)):
         return True
     else:
         return False
+
+def valid_interface(interface):
+    interface_addrs = psutil.net_if_addrs().get(interface) or []
+    return socket.AF_INET in [snicaddr.family for snicaddr in interface_addrs]
 
 if __name__ == '__main__':
     argv =sys.argv[1:]
     my_ip = "0.0.0.0"
     my_port = 8080
-    opts, args = getopt.getopt(argv,"i:p:",["ip=","port="])
+    my_interface = ""
+    opts, args = getopt.getopt(argv,"i:p:n:",["ip=","port=","net_interface="])
     for opt, arg in opts:
         if opt in ("-i", "--ip"):
             my_ip = arg
@@ -57,8 +64,16 @@ if __name__ == '__main__':
                 print("Port({}) is invalid.".format(my_port))
                 sys.exit(2)
             my_port = int(my_port)
+        elif opt in ("-n", "--net-interface"):
+            my_interface = arg
+            if not valid_interface(my_interface):
+                print("Interface({}) is invalid or inactive.".format(my_interface))
+                sys.exit(2)            
 
     import uvicorn
+    if len(my_interface) > 0:
+        print("Use interface({}) for RMT server".format(my_interface))
+        rmt_py_wrapper.rmt_server_config(my_interface)
     rmt_py_wrapper.rmt_server_init()
     uvicorn.run(app='main:app', host=my_ip, port=my_port)
     rmt_py_wrapper.rmt_server_deinit()
