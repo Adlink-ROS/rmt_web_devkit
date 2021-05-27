@@ -22,14 +22,19 @@
           <span>{{ row.hostname }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="Task Mode" width="130px" align="center">
+        <template #default="{row}">
+          <span>{{ row.task_mode }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="WiFi Signal" width="130px" align="center">
+        <template #default="{row}">
+          <span>{{ row.wifi_rssi }} dBm</span>
+        </template>
+      </el-table-column>
       <el-table-column label="CPU Usage" width="160px" align="center">
         <template #default="{row}">
           <el-progress :percentage="row.cpu" :color="usageColorMethod" />
-        </template>
-      </el-table-column>
-      <el-table-column label="Disk Usage" width="160px" align="center">
-        <template #default="{row}">
-          <el-progress :percentage="50" :color="usageColorMethod" />
         </template>
       </el-table-column>
       <el-table-column label="RAM Usage" width="160px" align="center">
