@@ -32,9 +32,9 @@
       style="width: 100%;"
       @selection-change="handleSelectionChange"
     >
-      <el-table-column type="selection" align="center" />
-      <el-table-column label="Index" type="index" align="center" width="80" />
-      <el-table-column label="Device ID" prop="DeviceID" sortable :sort-orders="['ascending', 'descending']" width="110px" align="center">
+      <el-table-column type="selection" align="center" width="40" />
+      <el-table-column label="Index" type="index" align="center" width="60" />
+      <el-table-column label="Device ID" prop="DeviceID" sortable :sort-orders="['ascending', 'descending']" width="130px" align="center">
         <template #default="{row}">
           <span>{{ row.DeviceID }}</span>
         </template>
@@ -59,12 +59,12 @@
           <span>{{ row.MAC }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="RMT version" width="110px" align="center">
+      <!-- <el-table-column label="RMT version" width="110px" align="center">
         <template #default="{row}">
           <span>{{ row.RMT_VERSION }}</span>
         </template>
-      </el-table-column>
-      <el-table-column label="Actions" align="center" width="230" class-name="small-padding fixed-width">
+      </el-table-column> -->
+      <el-table-column label="Actions" align="center" width="150" class-name="small-padding fixed-width">
         <template #default="{row}">
           <el-button v-waves type="info" size="mini" @click="handleUpdate(row)">
             Edit
@@ -101,7 +101,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog :visible.sync="dialogFormVisible">
+    <el-dialog :visible.sync="panel_on_edit">
       <el-tabs :value="default_tab">
         <el-tab-pane label="General" name="Config">General Settings
           <el-form ref="dataForm" :model="temp" label-position="left" label-width="90px" style="width: 400px; margin-left:50px; margin-top:20px">
@@ -125,7 +125,7 @@
         </el-tab-pane>
       </el-tabs>
       <div slot="footer" class="dialog-footer">
-        <el-button v-waves @click="dialogFormVisible = false">
+        <el-button v-waves @click="panel_on_edit = false">
           Cancel
         </el-button>
         <el-button v-waves :loading="wait_request" type="primary" @click="updateData()">
@@ -140,7 +140,12 @@
       @dialogShowChange="dialogShowControl"
       @syncData="syncLocate"
     />
-    <wifi-mode-component :dialog-show="panel_on_wifi" :wifi-set="temp_wifi" @dialogShowChange="dialogShowWifi" @syncData="syncWifi" />
+    <wifi-mode-component
+      :dialog-show="panel_on_wifi"
+      :wifi-set="temp_wifi"
+      @dialogShowChange="dialogShowWifi"
+      @syncData="syncWifi"
+    />
     <bulk-edit-component
       :dialog-show="panel_on_group"
       :device-list="multipleSelection"
@@ -199,7 +204,7 @@ export default {
       },
       locate_list: [],
       panel_on_group: false,
-      dialogFormVisible: false,
+      panel_on_edit: false,
       panel_on_control: false,
       panel_on_wifi: false,
       default_tab: 'Config'
@@ -328,7 +333,7 @@ export default {
       this.temp = Object.assign({}, row) // copy obj
       this.temp_wifi = Object.assign({}, this.client_list[this.temp.DeviceID])
       this.sameAsAP = false
-      this.dialogFormVisible = true
+      this.panel_on_edit = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
       })
@@ -346,7 +351,7 @@ export default {
             this.list.splice(index, 1, this.temp)
             this.client_list[this.temp.DeviceID] = Object.assign({}, this.temp_wifi)
             this.wait_request = false
-            this.dialogFormVisible = false
+            this.panel_on_edit = false
             this.$notify({
               title: 'Success',
               message: 'Update Successfully',
