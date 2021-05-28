@@ -97,7 +97,7 @@ def rmt_set_same_config_by_id(target_list, target_num, config_dict):
     info_num = rmt_py_wrapper.intptr_value(info_num_ptr)
     rmt_py_wrapper.delete_intptr(info_num_ptr) # release info_num_ptr
 
-    print("=== set same config result ===")
+    # print("=== set same config result ===")
     config_data = {}
     for i in range(0, info_num):
         # Split the result string into dictionary data
@@ -111,8 +111,11 @@ def rmt_set_same_config_by_id(target_list, target_num, config_dict):
                 value = key_value_pair[1]
                 device_dict[key] = value
         config_data[device_id] = device_dict
-    result = json.dumps(config_data, indent=4)
-    print(result)
+
+    # DEBUG 
+    # result = json.dumps(config_data, indent=4)
+    # print(result)
+
     return config_data
 
 def rmt_set_diff_config_by_id(device_config_json):
@@ -132,12 +135,12 @@ def rmt_set_diff_config_by_id(device_config_json):
         rmt_py_wrapper.data_info_array_setitem(data_info_array, idx, data_info_element)
         idx += 1
 
-    # Print what we want to set in data_info_array
-    print("=== set diff config req ===")
-    for i in range (0, target_num):
-        data_info_element = rmt_py_wrapper.data_info_array_getitem(data_info_array, i)
-        print("deviceID=%d" % data_info_element.deviceID)
-        print("value_list=%s" % data_info_element.value_list)
+    # DEBUG: Print what we want to set in data_info_array
+    # print("=== set diff config req ===")
+    # for i in range (0, target_num):
+    #     data_info_element = rmt_py_wrapper.data_info_array_getitem(data_info_array, i)
+        # print("deviceID=%d" % data_info_element.deviceID)
+        # print("value_list=%s" % data_info_element.value_list)
 
     # Send data_info_array to RMT library
     info_num_ptr = rmt_py_wrapper.new_intptr()
@@ -145,7 +148,7 @@ def rmt_set_diff_config_by_id(device_config_json):
     info_num = rmt_py_wrapper.intptr_value(info_num_ptr)
     rmt_py_wrapper.delete_intptr(info_num_ptr) # release info_num_ptr
 
-    print("=== set diff config result ===")
+    # print("=== set diff config result ===")
     config_data = {}
     for i in range(0, info_num):
         # Split the result string into dictionary data
@@ -159,8 +162,11 @@ def rmt_set_diff_config_by_id(device_config_json):
                 value = key_value_pair[1]
                 device_dict[key] = value
         config_data[device_id] = device_dict
-    result = json.dumps(config_data, indent=4)
-    print(result)
+        
+    # DEBUG 
+    # result = json.dumps(config_data, indent=4)
+    # print(result)
+
     return config_data
 
 def rmt_set_seq_config_by_id(device_list, config_dict):
@@ -185,12 +191,12 @@ def rmt_set_seq_config_by_id(device_list, config_dict):
         data_info_element.value_list = config_str
         rmt_py_wrapper.data_info_array_setitem(data_info_array, i, data_info_element)
 
-    # Print what we want to set in data_info_array
-    print("=== set sequential config req ===")
-    for i in range(0, target_num):
-        data_info_element = rmt_py_wrapper.data_info_array_getitem(data_info_array, i)
-        print("deviceID=%d" % data_info_element.deviceID)
-        print("value_list=%s" % data_info_element.value_list)
+    # DEBUG: Print what we want to set in data_info_array
+    # print("=== set sequential config req ===")
+    # for i in range(0, target_num):
+    #     data_info_element = rmt_py_wrapper.data_info_array_getitem(data_info_array, i)
+    #     print("deviceID=%d" % data_info_element.deviceID)
+    #     print("value_list=%s" % data_info_element.value_list)
 
     # Send data_info_array to RMT library
     info_num_ptr = rmt_py_wrapper.new_intptr()
@@ -198,7 +204,7 @@ def rmt_set_seq_config_by_id(device_list, config_dict):
     info_num = rmt_py_wrapper.intptr_value(info_num_ptr)
     rmt_py_wrapper.delete_intptr(info_num_ptr) # release info_num_ptr
 
-    print("=== set sequential config result ===")
+    # print("=== set sequential config result ===")
     config_data = {}
     for i in range(0, info_num):
         # Split the result string into dictionary data
@@ -212,19 +218,21 @@ def rmt_set_seq_config_by_id(device_list, config_dict):
                 value = key_value_pair[1]
                 device_dict[key] = value
         config_data[device_id] = device_dict
-    result = json.dumps(config_data, indent=4)
-    print(result)
+
+    # DEBUG 
+    # result = json.dumps(config_data, indent=4)
+    # print(result)
+
     return config_data
 
 def rmt_discovery():
-    rmt_py_wrapper.rmt_server_init()
     num_ptr = rmt_py_wrapper.new_intptr()
     dev_list = rmt_py_wrapper.device_info_list.frompointer(rmt_py_wrapper.rmt_server_create_device_list(num_ptr))
     num = rmt_py_wrapper.intptr_value(num_ptr)
     rmt_py_wrapper.delete_intptr(num_ptr) # release num_ptr
     return dev_list, num
 
-@router.post("/get_config_for_all", response_model=schemas.Response)
+@router.post("/get_config_for_all", response_model=schemas.Response, summary="Get the config settings of all the devices")
 def get_config_for_all(config_req_body: schemas.GetConfigForAll_ReqBody) -> Any:
     code = 40400 # not found for default
     dev_list, num = rmt_discovery()
@@ -234,13 +242,11 @@ def get_config_for_all(config_req_body: schemas.GetConfigForAll_ReqBody) -> Any:
         code = 20000
     # TODO: free dev_list
     # rmt_py_wrapper.rmt_server_free_device_list(dev_list)
-    rmt_py_wrapper.rmt_server_deinit()
     return {"code": code, "data": data}
 
-@router.post("/get_same_config_by_id", response_model=schemas.Response)
+@router.post("/get_same_config_by_id", response_model=schemas.Response, summary="Get the config settings of input devices")
 def get_same_config_by_id(config_req_body: schemas.GetSameConfigById_ReqBody) -> Any:
     code = 40400 # not found for default
-    rmt_py_wrapper.rmt_server_init()
     target_list = config_req_body.device_list
     config_list = config_req_body.config_list
     target_num = len(target_list)
@@ -248,20 +254,18 @@ def get_same_config_by_id(config_req_body: schemas.GetSameConfigById_ReqBody) ->
     if data:
         # found => 200 OK
         code = 20000
-    print(data)
+    # print(data)
     # TODO: free dev_list
     # rmt_py_wrapper.rmt_server_free_device_list(dev_list)
-    rmt_py_wrapper.rmt_server_deinit()
     return {"code": code, "data": data}
 
 # @router.post("/get_diff_config_by_id", response_model=schemas.Response)
 # def get_diff_config_by_id(config_req_body: GetDiffConfigById_ReqBody) -> Any:
 #     pass
 
-@router.put("/set_same_config_by_id", response_model=schemas.Response)
+@router.put("/set_same_config_by_id", response_model=schemas.Response, summary="Configure the input settings to the target devices")
 def set_same_config_by_id(config_req_body: schemas.SetSameConfigById_ReqBody) -> Any:
     code = 40400 # not found for default
-    rmt_py_wrapper.rmt_server_init()
     target_list = config_req_body.device_list
     config_dict = config_req_body.config_dict
     target_num = len(target_list)
@@ -271,20 +275,18 @@ def set_same_config_by_id(config_req_body: schemas.SetSameConfigById_ReqBody) ->
         code = 20000
     return {"code": code, "data": data}
 
-@router.put("/set_diff_config_by_id", response_model=schemas.Response)
+@router.put("/set_diff_config_by_id", response_model=schemas.Response, summary="Customize settings for each devices")
 def set_diff_config_by_id(config_req_body: schemas.SetDiffConfigById_ReqBody) -> Any:
     code = 40400 # not found for default
-    rmt_py_wrapper.rmt_server_init()
     data = rmt_set_diff_config_by_id(config_req_body.device_config_json)
     if data:
         # found => 200 OK
         code = 20000
     return {"code": code, "data": data}
 
-@router.put("/set_sequential_config_by_id", response_model=schemas.Response)
+@router.put("/set_sequential_config_by_id", response_model=schemas.Response, summary="Configure sequential numbering settings for the target devices")
 def set_seq_config_by_id(config_req_body: schemas.SetSequentialConfigById_ReqBody) -> Any:
     code = 40400 # not found for default
-    rmt_py_wrapper.rmt_server_init()
     device_list = config_req_body.device_list
     config_dict = config_req_body.numbering_config_start
     data = rmt_set_seq_config_by_id(device_list, config_dict)

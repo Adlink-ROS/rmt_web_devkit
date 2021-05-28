@@ -12,9 +12,9 @@ from app.core.config import settings
 router = APIRouter()
 
 # /login/token is used by web browser
-@router.post("/login/token", response_model=schemas.Response, exclude_dependencies=True)
+@router.post("/login/token", response_model=schemas.Response, exclude_dependencies=True, summary="Token for Web login")
 def login_token(form_data: OAuth2PasswordRequestForm = Depends()) -> Any:
-    """Web Login Api"""
+    """Web Login Api test"""
     user = security.authenticate_user(security.fake_users_db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -34,7 +34,7 @@ def login_token(form_data: OAuth2PasswordRequestForm = Depends()) -> Any:
     }
 
 # /login/access-token is used by RESTful API server
-@router.post("/login/access-token", response_model=schemas.Token, exclude_dependencies=True)
+@router.post("/login/access-token", response_model=schemas.Token, exclude_dependencies=True, summary="Token for RESTful server login")
 def login_access_token(form_data: OAuth2PasswordRequestForm = Depends()) -> Any:
     """OAuth2 compatible token login, get an access token for future requests"""
     user = security.authenticate_user(security.fake_users_db, form_data.username, form_data.password)

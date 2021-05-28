@@ -75,8 +75,6 @@ class ServerNamespace(socketio.AsyncNamespace):
             await self.server.sleep(3)
 
     async def hardware_info(self):
-        rmt_py_wrapper.rmt_server_init()
-
         # Get device list:
         num_ptr = rmt_py_wrapper.new_intptr()
         dev_list = rmt_py_wrapper.device_info_list.frompointer(rmt_py_wrapper.rmt_server_create_device_list(num_ptr))
@@ -84,7 +82,7 @@ class ServerNamespace(socketio.AsyncNamespace):
         rmt_py_wrapper.delete_intptr(num_ptr) # release num_ptr
 
         # Create config key string
-        config_list = ["cpu", "ram", "hostname", "task_mode"]
+        config_list = ["cpu", "ram", "hostname", "wifi", "task_mode"]
         config_key_str = ""
         for item in config_list:
             config_key_str += item + ';'
@@ -111,14 +109,22 @@ class ServerNamespace(socketio.AsyncNamespace):
             for item in result_list:
                 for key in config_list:
                     if key in item:
-                        value = item[len(key)+1:]
-                        if value.isnumeric():
-                            dict_data[key] = int(value)
+                        if key == "wifi":
+                            value_list = item[len(key)+1:].split(' ')
+                            if len(value_list) >= 3:
+                                wifi_rssi = value_list[2]
+                                dict_data["wifi_rssi"] = wifi_rssi
                         else:
-                            dict_data[key] = value
+                            value = item[len(key)+1:]
+                            if value.isnumeric():
+                                dict_data[key] = int(value)
+                            else:
+                                dict_data[key] = value
             items.append(dict_data)                 
 
         data["items"] = items
+
+        # DEBUG
         result = json.dumps(data, indent=4)
         print(result)
 

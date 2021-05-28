@@ -22,19 +22,19 @@
           <span>{{ row.hostname }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Status" width="130px" align="center">
+      <el-table-column label="Task Mode" width="130px" align="center">
         <template #default="{row}">
           <el-tag :type="statusTagMethod(row.task_mode)">{{ row.task_mode }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="WiFi Signal" width="130px" align="center">
+        <template #default="{row}">
+          <span>{{ row.wifi_rssi }} dBm</span>
         </template>
       </el-table-column>
       <el-table-column label="CPU Usage" width="160px" align="center">
         <template #default="{row}">
           <el-progress :percentage="row.cpu" :color="usageColorMethod" />
-        </template>
-      </el-table-column>
-      <el-table-column label="Disk Usage" width="160px" align="center">
-        <template #default="{row}">
-          <el-progress :percentage="50" :color="usageColorMethod" />
         </template>
       </el-table-column>
       <el-table-column label="RAM Usage" width="160px" align="center">
@@ -117,10 +117,10 @@ export default {
     statusTagMethod(status) {
       if (status === 'Idle') {
         return 'info'
-      } else if (status === 'Navigating') {
-        return 'success'
-      } else {
+      } else if (status === 'Simulation') {
         return null
+      } else {
+        return 'success'
       }
     }
   }
