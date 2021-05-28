@@ -22,6 +22,11 @@
           <span>{{ row.hostname }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="Status" width="130px" align="center">
+        <template #default="{row}">
+          <el-tag :type="statusTagMethod(row.task_mode)">{{ row.task_mode }}</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="CPU Usage" width="160px" align="center">
         <template #default="{row}">
           <el-progress :percentage="row.cpu" :color="usageColorMethod" />
@@ -107,6 +112,15 @@ export default {
         return '#F9F900'
       } else {
         return '#67c23a'
+      }
+    },
+    statusTagMethod(status) {
+      if (status === 'Idle') {
+        return 'info'
+      } else if (status === 'Navigating') {
+        return 'success'
+      } else {
+        return null
       }
     }
   }

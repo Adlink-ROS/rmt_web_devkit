@@ -84,7 +84,7 @@ class ServerNamespace(socketio.AsyncNamespace):
         rmt_py_wrapper.delete_intptr(num_ptr) # release num_ptr
 
         # Create config key string
-        config_list = ["cpu", "ram", "hostname", "wifi"]
+        config_list = ["cpu", "ram", "hostname", "task_mode"]
         config_key_str = ""
         for item in config_list:
             config_key_str += item + ';'

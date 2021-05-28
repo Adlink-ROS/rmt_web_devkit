@@ -74,6 +74,18 @@
           </el-button>
         </template>
       </el-table-column>
+      <el-table-column label="Task" align="center" width="140" class-name="small-padding fixed-width">
+        <template #default="{row}">
+          <el-select :value="row.current_task" placeholder="Task" :loading="listLoading" @change="handle_task($event, row)">
+            <el-option
+              v-for="item in row.task_list"
+              :key="item"
+              :label="item"
+              :value="item"
+            />
+          </el-select>
+        </template>
+      </el-table-column>
     </el-table>
 
     <pagination v-show="total>0" :total="total" :page.sync="pageSetting.page" :limit.sync="pageSetting.limit" @pagination="getList" />
@@ -218,7 +230,7 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      var config = { 'config_list': ['wifi'] }
+      var config = { 'config_list': ['wifi', 'task_list', 'task_mode'] }
       fetchRobotList().then(response => {
         this.list = response.data.items
         this.total = response.data.total
@@ -234,6 +246,10 @@ export default {
               type: 'warning'
             })
           }
+          var task_char = response.data[element].task_list.split(' ')
+          var list_index = this.list.findIndex(agent => agent.DeviceID === element)
+          this.list[list_index]['task_list'] = task_char
+          this.list[list_index]['current_task'] = response.data[element].task_mode
         })
         this.listLoading = false
       })
@@ -390,6 +406,22 @@ export default {
           type: 'success'
         })
       })
+    },
+
+    // Function for task mode request
+    handle_task(val, row) {
+      if (confirm(`Click OK to switch task mode of ${row.Hostname} to "${val}"`)) {
+        this.listLoading = true
+        var tempData = { 'device_config_json': { [row.DeviceID]: { 'task_mode': val }}}
+        set_config_diff(tempData).then(() => {
+          this.listLoading = false
+          row.current_task = val
+          this.$message({
+            message: 'task launch success',
+            type: 'success'
+          })
+        })
+      }
     }
   }
 }
