@@ -32,9 +32,9 @@
       style="width: 100%;"
       @selection-change="handleSelectionChange"
     >
-      <el-table-column type="selection" align="center" />
-      <el-table-column label="Index" type="index" align="center" width="80" />
-      <el-table-column label="Device ID" prop="DeviceID" sortable :sort-orders="['ascending', 'descending']" width="110px" align="center">
+      <el-table-column type="selection" align="center" width="40" />
+      <el-table-column label="Index" type="index" align="center" width="60" />
+      <el-table-column label="Device ID" prop="DeviceID" sortable :sort-orders="['ascending', 'descending']" width="130px" align="center">
         <template #default="{row}">
           <span>{{ row.DeviceID }}</span>
         </template>
@@ -59,12 +59,12 @@
           <span>{{ row.MAC }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="RMT version" width="110px" align="center">
+      <!-- <el-table-column label="RMT version" width="110px" align="center">
         <template #default="{row}">
           <span>{{ row.RMT_VERSION }}</span>
         </template>
-      </el-table-column>
-      <el-table-column label="Actions" align="center" width="230" class-name="small-padding fixed-width">
+      </el-table-column> -->
+      <el-table-column label="Actions" align="center" width="150" class-name="small-padding fixed-width">
         <template #default="{row}">
           <el-button v-waves type="info" size="mini" @click="handleUpdate(row)">
             Edit
@@ -72,6 +72,18 @@
           <el-button v-waves type="primary" size="mini" @click="handlecontrol(row)">
             Control
           </el-button>
+        </template>
+      </el-table-column>
+      <el-table-column label="Task" align="center" width="140" class-name="small-padding fixed-width">
+        <template #default="{row}">
+          <el-select :value="row.current_task" placeholder="Task" :loading="listLoading" @change="handle_task($event, row)">
+            <el-option
+              v-for="item in row.task_list"
+              :key="item"
+              :label="item"
+              :value="item"
+            />
+          </el-select>
         </template>
       </el-table-column>
     </el-table>
@@ -101,7 +113,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog :visible.sync="dialogFormVisible">
+    <el-dialog :visible.sync="panel_on_edit">
       <el-tabs :value="default_tab">
         <el-tab-pane label="General" name="Config">General Settings
           <el-form ref="dataForm" :model="temp" label-position="left" label-width="90px" style="width: 400px; margin-left:50px; margin-top:20px">
@@ -125,7 +137,7 @@
         </el-tab-pane>
       </el-tabs>
       <div slot="footer" class="dialog-footer">
-        <el-button v-waves @click="dialogFormVisible = false">
+        <el-button v-waves @click="panel_on_edit = false">
           Cancel
         </el-button>
         <el-button v-waves :loading="wait_request" type="primary" @click="updateData()">
@@ -140,7 +152,12 @@
       @dialogShowChange="dialogShowControl"
       @syncData="syncLocate"
     />
-    <wifi-mode-component :dialog-show="panel_on_wifi" :wifi-set="temp_wifi" @dialogShowChange="dialogShowWifi" @syncData="syncWifi" />
+    <wifi-mode-component
+      :dialog-show="panel_on_wifi"
+      :wifi-set="temp_wifi"
+      @dialogShowChange="dialogShowWifi"
+      @syncData="syncWifi"
+    />
     <bulk-edit-component
       :dialog-show="panel_on_group"
       :device-list="multipleSelection"
@@ -199,7 +216,7 @@ export default {
       },
       locate_list: [],
       panel_on_group: false,
-      dialogFormVisible: false,
+      panel_on_edit: false,
       panel_on_control: false,
       panel_on_wifi: false,
       default_tab: 'Config'
@@ -213,7 +230,7 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      var config = { 'config_list': ['wifi'] }
+      var config = { 'config_list': ['wifi', 'task_list', 'task_mode'] }
       fetchRobotList().then(response => {
         this.list = response.data.items
         this.total = response.data.total
@@ -229,6 +246,10 @@ export default {
               type: 'warning'
             })
           }
+          var task_char = response.data[element].task_list.split(' ')
+          var list_index = this.list.findIndex(agent => agent.DeviceID === element)
+          this.list[list_index]['task_list'] = task_char
+          this.list[list_index]['current_task'] = response.data[element].task_mode
         })
         this.listLoading = false
       })
@@ -328,7 +349,7 @@ export default {
       this.temp = Object.assign({}, row) // copy obj
       this.temp_wifi = Object.assign({}, this.client_list[this.temp.DeviceID])
       this.sameAsAP = false
-      this.dialogFormVisible = true
+      this.panel_on_edit = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
       })
@@ -346,7 +367,7 @@ export default {
             this.list.splice(index, 1, this.temp)
             this.client_list[this.temp.DeviceID] = Object.assign({}, this.temp_wifi)
             this.wait_request = false
-            this.dialogFormVisible = false
+            this.panel_on_edit = false
             this.$notify({
               title: 'Success',
               message: 'Update Successfully',
@@ -385,6 +406,22 @@ export default {
           type: 'success'
         })
       })
+    },
+
+    // Function for task mode request
+    handle_task(val, row) {
+      if (confirm(`Click OK to switch task mode of ${row.Hostname} to "${val}"`)) {
+        this.listLoading = true
+        var tempData = { 'device_config_json': { [row.DeviceID]: { 'task_mode': val }}}
+        set_config_diff(tempData).then(() => {
+          this.listLoading = false
+          row.current_task = val
+          this.$message({
+            message: 'task launch success',
+            type: 'success'
+          })
+        })
+      }
     }
   }
 }

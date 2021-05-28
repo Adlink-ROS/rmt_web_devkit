@@ -25,7 +25,7 @@ def rmt_discovery():
     for i in range(0, num):
         item = {
             "Index": (i+1),
-            "DeviceID": dev_list[i].deviceID,
+            "DeviceID": str(dev_list[i].deviceID),
             "Hostname": dev_list[i].host,
             "Model": dev_list[i].model,
             "IP": dev_list[i].ip,

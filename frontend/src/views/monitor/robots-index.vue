@@ -24,7 +24,7 @@
       </el-table-column>
       <el-table-column label="Task Mode" width="130px" align="center">
         <template #default="{row}">
-          <span>{{ row.task_mode }}</span>
+          <el-tag :type="statusTagMethod(row.task_mode)">{{ row.task_mode }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="WiFi Signal" width="130px" align="center">
@@ -112,6 +112,15 @@ export default {
         return '#F9F900'
       } else {
         return '#67c23a'
+      }
+    },
+    statusTagMethod(status) {
+      if (status === 'Idle') {
+        return 'info'
+      } else if (status === 'Simulation') {
+        return null
+      } else {
+        return 'success'
       }
     }
   }

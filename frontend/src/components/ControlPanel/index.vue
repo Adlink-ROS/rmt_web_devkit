@@ -3,10 +3,10 @@
     <el-dialog title="Control Panel" :visible.sync="dialogFormVisible" @close="closeDialog">
       <el-form ref="dataForm" :model="config" label-position="left" label-width="90px" style="width: 400px; margin-left:50px;">
         <el-form-item label="Robot ID">
-          <el-input v-model="config.DeviceID" :disabled="true" />
+          <span>{{ config.DeviceID }}</span>
         </el-form-item>
         <el-form-item label="Hostname">
-          <el-input v-model="config.Hostname" :disabled="true" />
+          <span>{{ config.Hostname }}</span>
         </el-form-item>
         <el-row style="margin-top:20px">
           <el-switch
