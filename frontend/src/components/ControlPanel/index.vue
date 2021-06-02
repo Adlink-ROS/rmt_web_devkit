@@ -10,14 +10,14 @@
         </el-form-item>
         <el-row style="margin-top:20px">
           <el-switch
-            v-model="locate_switch"
+            v-model="locateSwitch"
             active-text="ON"
             inactive-text="OFF"
             active-value="on"
             inactive-value="off"
           />
           <el-tooltip effect="light" content="Find ROScube with flashing LED">
-            <el-button :loading="wait_request" type="primary" style="width: 120px; margin-left:50px" @click="handleLocate()">
+            <el-button :loading="waitRequest" type="primary" style="width: 120px; margin-left:50px" @click="handleLocate()">
               Locate
             </el-button>
           </el-tooltip>
@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { set_config_diff } from '@/api/robots'
+import { setConfigDiff } from '@/api/robots'
 
 export default {
   props: {
@@ -59,14 +59,14 @@ export default {
   data() {
     return {
       dialogFormVisible: this.dialogShow,
-      wait_request: false,
-      locate_switch: this.locate
+      waitRequest: false,
+      locateSwitch: this.locate
     }
   },
   watch: {
     dialogShow(val) {
       this.dialogFormVisible = val
-      this.locate_switch = this.locate
+      this.locateSwitch = this.locate
     }
   },
   methods: {
@@ -78,18 +78,18 @@ export default {
         message: 'ROScube start reboot',
         type: 'warning'
       })
-      this.locate_switch = this.locate
+      this.locateSwitch = this.locate
     },
     handleLocate() {
-      var locate_json = { 'device_config_json': { [this.config.DeviceID]: { 'locate': this.locate_switch }}}
-      this.wait_request = true
-      set_config_diff(locate_json).then(() => {
-        this.wait_request = false
+      var tempData = { 'device_config_json': { [this.config.DeviceID]: { 'locate': this.locateSwitch }}}
+      this.waitRequest = true
+      setConfigDiff(tempData).then(() => {
+        this.waitRequest = false
         this.$message({
           message: 'ROSCube Locate Set',
           type: 'success'
         })
-        this.$emit('syncData', this.locate_switch)
+        this.$emit('syncData', this.locateSwitch)
       })
     }
   }

@@ -10,7 +10,7 @@
         <el-form-item label="Frequency Band" style="margin-top:20px">
           <el-select v-model="wifiSet.band" placeholder="Select" style="margin-left:50px">
             <el-option
-              v-for="item in band_list"
+              v-for="item in bandList"
               :key="item"
               :label="item"
               :value="item"
@@ -29,7 +29,7 @@
         <el-button @click="closeDialog">
           Cancel
         </el-button>
-        <el-button :disabled="button_block" @click="handleUpdate">
+        <el-button :disabled="buttonBlock" @click="handleUpdate">
           Done
         </el-button>
       </div>
@@ -55,11 +55,11 @@ export default {
   data() {
     return {
       dialogFormVisible: this.dialogShow,
-      band_list: ['2.4 GHz', '5 GHz']
+      bandList: ['2.4 GHz', '5 GHz']
     }
   },
   computed: {
-    button_block() {
+    buttonBlock() {
       return this.wifiSet.password ? this.wifiSet.password.length < 8 : true
     }
   },

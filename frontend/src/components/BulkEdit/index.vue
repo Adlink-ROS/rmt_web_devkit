@@ -10,15 +10,15 @@
           </el-form>
         </el-tab-pane>
         <el-tab-pane label="WiFi" name="WiFi">RMT WiFi Client Configuration Settings
-          <el-form :model="wifi_set" label-position="left" label-width="90px" style="width: 80%; margin-left:50px; margin-top:20px">
+          <el-form :model="wifiSet" label-position="left" label-width="90px" style="width: 80%; margin-left:50px; margin-top:20px">
             <el-form-item>
-              <el-checkbox v-model="sameAsAP" border @change="wifi_to_ap">Same as AP Server</el-checkbox>
+              <el-checkbox v-model="sameAsAP" border @change="wifiToAp">Same as AP Server</el-checkbox>
             </el-form-item>
             <el-form-item label="SSID">
-              <el-input v-model="wifi_set.ssid" maxlength="32" show-word-limit @input="wifi_diff" />
+              <el-input v-model="wifiSet.ssid" maxlength="32" show-word-limit @input="wifiDiff" />
             </el-form-item>
             <el-form-item label="Password">
-              <el-input v-model="wifi_set.password" show-password minlength="8" maxlength="32" @input="wifi_diff" />
+              <el-input v-model="wifiSet.password" show-password minlength="8" maxlength="32" @input="wifiDiff" />
             </el-form-item>
           </el-form>
         </el-tab-pane>
@@ -51,7 +51,7 @@
         <el-button v-waves @click="closeDialog">
           Close
         </el-button>
-        <el-button v-waves :disabled="wifi_set.password.length<8" :loading="wait_request" type="primary" @click="handleSubmit()">
+        <el-button v-waves :disabled="wifiSet.password.length<8" :loading="waitRequest" type="primary" @click="handleSubmit()">
           Submit
         </el-button>
       </div>
@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import { set_config_same, set_config_diff } from '@/api/robots'
+import { setConfigSame, setConfigDiff } from '@/api/robots'
 import waves from '@/directive/waves' // waves directive
 
 export default {
@@ -83,9 +83,9 @@ export default {
   data() {
     return {
       dialogFormVisible: this.dialogShow,
-      wifi_set: { 'ssid': '', 'password': '' },
+      wifiSet: { 'ssid': '', 'password': '' },
       hostname: 'ROSCube',
-      wait_request: false,
+      waitRequest: false,
       sameAsAP: true,
       sameAsFirst: false,
       currentTabName: 'Config',
@@ -96,7 +96,7 @@ export default {
     dialogShow(val) {
       if (val) {
         this.sameAsAP = true
-        this.wifi_set = Object.assign({}, this.tempWifi)
+        this.wifiSet = Object.assign({}, this.tempWifi)
         this.deviceList.forEach((element) => {
           this.AgentCurrentTasks[element.DeviceID] = element.current_task
         })
@@ -125,42 +125,42 @@ export default {
     closeDialog() {
       this.$emit('dialogShowChange', false)
     },
-    wifi_to_ap(val) {
+    wifiToAp(val) {
       if (val) {
-        this.wifi_set = Object.assign({}, this.tempWifi)
+        this.wifiSet = Object.assign({}, this.tempWifi)
       } else {
-        this.wifi_set = { 'ssid': '', 'password': '' }
+        this.wifiSet = { 'ssid': '', 'password': '' }
       }
     },
-    wifi_diff() {
+    wifiDiff() {
       this.sameAsAP = false
     },
     async handleSubmit() {
-      this.wait_request = true
-      var temp_data = {}
+      this.waitRequest = true
+      var tempData = {}
       if (this.currentTabName === 'Config') {
-        temp_data = { 'device_list': Array.from(this.deviceList, device => device.DeviceID.toString(10)),
+        tempData = { 'device_list': Array.from(this.deviceList, device => device.DeviceID.toString(10)),
           'config_dict': { 'hostname': this.hostname }}
-        await set_config_same(temp_data)
+        await setConfigSame(tempData)
         this.deviceList.forEach((element) => { element.Hostname = this.hostname })
       } else if (this.currentTabName === 'WiFi') {
-        temp_data = { 'device_list': Array.from(this.deviceList, device => device.DeviceID.toString(10)),
-          'config_dict': { 'wifi': `${this.wifi_set.ssid} ${this.wifi_set.password}` }}
-        await set_config_same(temp_data)
-        this.tempWifi['ssid'] = this.wifi_set.ssid
-        this.tempWifi['password'] = this.wifi_set.password
+        tempData = { 'device_list': Array.from(this.deviceList, device => device.DeviceID.toString(10)),
+          'config_dict': { 'wifi': `${this.wifiSet.ssid} ${this.wifiSet.password}` }}
+        await setConfigSame(tempData)
+        this.tempWifi['ssid'] = this.wifiSet.ssid
+        this.tempWifi['password'] = this.wifiSet.password
         this.$emit('syncData')
       } else if (this.currentTabName === 'Task') {
-        temp_data = { 'device_config_json': {}}
+        tempData = { 'device_config_json': {}}
         this.deviceList.forEach((element) => {
-          temp_data['device_config_json'][element.DeviceID] = { 'task_mode': this.AgentCurrentTasks[element.DeviceID] }
+          tempData['device_config_json'][element.DeviceID] = { 'task_mode': this.AgentCurrentTasks[element.DeviceID] }
         })
-        await set_config_diff(temp_data)
+        await setConfigDiff(tempData)
         this.deviceList.forEach((element) => {
-          element.current_task = this.AgentCurrentTasks[element.DeviceID]
+          element['current_task'] = this.AgentCurrentTasks[element.DeviceID]
         })
       }
-      this.wait_request = false
+      this.waitRequest = false
       this.$notify({
         title: 'Success',
         message: 'Configuration Update Successfully',
