@@ -1,16 +1,16 @@
 <template>
   <div>
-    <el-dialog :visible.sync="dialogFormVisible" @close="closeDialog">
-      <el-tabs value="Config">
+    <el-dialog :visible.sync="dialogFormVisible" width="60%" @close="closeDialog">
+      <el-tabs ref="config-tabs" value="Config" @tab-click="handleSwitchTab">
         <el-tab-pane label="General" name="Config">General Settings
-          <el-form ref="dataForm" label-position="left" label-width="90px" style="width: 400px; margin-left:50px; margin-top:20px">
+          <el-form label-position="left" label-width="90px" style="width: 80%; margin-left:50px; margin-top:20px">
             <el-form-item label="Hostname">
               <el-input v-model="hostname" />
             </el-form-item>
           </el-form>
         </el-tab-pane>
         <el-tab-pane label="WiFi" name="WiFi">RMT WiFi Client Configuration Settings
-          <el-form ref="dataForm" :model="wifi_set" label-position="left" label-width="90px" style="width: 400px; margin-left:50px; margin-top:20px">
+          <el-form :model="wifi_set" label-position="left" label-width="90px" style="width: 80%; margin-left:50px; margin-top:20px">
             <el-form-item>
               <el-checkbox v-model="sameAsAP" border @change="wifi_to_ap">Same as AP Server</el-checkbox>
             </el-form-item>
@@ -22,13 +22,37 @@
             </el-form-item>
           </el-form>
         </el-tab-pane>
+        <el-tab-pane label="Task" name="Task">Robot Task
+          <el-form label-position="left" label-width="90px" style="width: 90%; margin-left:50px; margin-top:20px">
+            <el-row class="target-header">
+              <el-col :span="7"><span>Device ID</span></el-col>
+              <el-col :span="7"><span>Hostname</span></el-col>
+              <el-col :span="3"><span>Task</span></el-col>
+              <el-checkbox v-model="sameAsFirst" border @change="TaskToFirst">same as first agent</el-checkbox>
+            </el-row>
+            <div v-for="device in deviceList" :key="device.DeviceID">
+              <el-row style="margin-top:10px">
+                <el-col :span="7"><span>{{ device.DeviceID }}</span></el-col>
+                <el-col :span="7"><span>{{ device.Hostname }}</span></el-col>
+                <el-select v-model="AgentCurrentTasks[device.DeviceID]" placeholder="Task" @change="handleSelect">
+                  <el-option
+                    v-for="item in device.task_list"
+                    :key="item"
+                    :label="item"
+                    :value="item"
+                  />
+                </el-select>
+              </el-row>
+            </div>
+          </el-form>
+        </el-tab-pane>
       </el-tabs>
       <div slot="footer" class="dialog-footer">
         <el-button v-waves @click="closeDialog">
-          Cancel
+          Close
         </el-button>
-        <el-button v-waves :disabled="wifi_set.password.length<8" :loading="wait_request" type="primary" @click="handleUpdate()">
-          Confirm
+        <el-button v-waves :disabled="wifi_set.password.length<8" :loading="wait_request" type="primary" @click="handleSubmit()">
+          Submit
         </el-button>
       </div>
     </el-dialog>
@@ -37,7 +61,7 @@
 </template>
 
 <script>
-import { set_config_same } from '@/api/robots'
+import { set_config_same, set_config_diff } from '@/api/robots'
 import waves from '@/directive/waves' // waves directive
 
 export default {
@@ -62,7 +86,10 @@ export default {
       wifi_set: { 'ssid': '', 'password': '' },
       hostname: 'ROSCube',
       wait_request: false,
-      sameAsAP: true
+      sameAsAP: true,
+      sameAsFirst: false,
+      currentTabName: 'Config',
+      AgentCurrentTasks: {}
     }
   },
   watch: {
@@ -70,11 +97,31 @@ export default {
       if (val) {
         this.sameAsAP = true
         this.wifi_set = Object.assign({}, this.tempWifi)
+        this.deviceList.forEach((element) => {
+          this.AgentCurrentTasks[element.DeviceID] = element.current_task
+        })
       }
+      this.sameAsFirst = false
       this.dialogFormVisible = val
     }
   },
   methods: {
+    TaskToFirst(val) {
+      if (val) {
+        var idList = Object.keys(this.AgentCurrentTasks)
+        idList.forEach((element) => {
+          this.AgentCurrentTasks[element] = this.AgentCurrentTasks[idList[0]]
+        })
+      }
+      this.$forceUpdate()
+    },
+    handleSwitchTab(val) {
+      this.currentTabName = val.name
+    },
+    handleSelect() {
+      this.sameAsFirst = false
+      this.$forceUpdate()
+    },
     closeDialog() {
       this.$emit('dialogShowChange', false)
     },
@@ -88,20 +135,35 @@ export default {
     wifi_diff() {
       this.sameAsAP = false
     },
-    async handleUpdate() {
-      var temp_data = { 'device_list': Array.from(this.deviceList, device => device.DeviceID.toString(10)),
-        'config_dict': { 'hostname': this.hostname, 'wifi': `${this.wifi_set.ssid} ${this.wifi_set.password}` }}
+    async handleSubmit() {
       this.wait_request = true
-      await set_config_same(temp_data)
-      this.tempWifi['ssid'] = this.wifi_set.ssid
-      this.tempWifi['password'] = this.wifi_set.password
-      this.deviceList.forEach((element) => { element.Hostname = this.hostname })
+      var temp_data = {}
+      if (this.currentTabName === 'Config') {
+        temp_data = { 'device_list': Array.from(this.deviceList, device => device.DeviceID.toString(10)),
+          'config_dict': { 'hostname': this.hostname }}
+        await set_config_same(temp_data)
+        this.deviceList.forEach((element) => { element.Hostname = this.hostname })
+      } else if (this.currentTabName === 'WiFi') {
+        temp_data = { 'device_list': Array.from(this.deviceList, device => device.DeviceID.toString(10)),
+          'config_dict': { 'wifi': `${this.wifi_set.ssid} ${this.wifi_set.password}` }}
+        await set_config_same(temp_data)
+        this.tempWifi['ssid'] = this.wifi_set.ssid
+        this.tempWifi['password'] = this.wifi_set.password
+        this.$emit('syncData')
+      } else if (this.currentTabName === 'Task') {
+        temp_data = { 'device_config_json': {}}
+        this.deviceList.forEach((element) => {
+          temp_data['device_config_json'][element.DeviceID] = { 'task_mode': this.AgentCurrentTasks[element.DeviceID] }
+        })
+        await set_config_diff(temp_data)
+        this.deviceList.forEach((element) => {
+          element.current_task = this.AgentCurrentTasks[element.DeviceID]
+        })
+      }
       this.wait_request = false
-      this.$emit('dialogShowChange', false)
-      this.$emit('syncData')
       this.$notify({
         title: 'Success',
-        message: 'Update Successfully',
+        message: 'Configuration Update Successfully',
         type: 'success',
         duration: 2000
       })
@@ -109,3 +171,17 @@ export default {
   }
 }
 </script>
+
+<style>
+.el-select {
+  width: 200pt;
+}
+.el-col {
+  margin-top: 10px;
+}
+.target-header {
+  font-weight:bold;
+  font-size:16px;
+  margin-bottom: 20px;
+}
+</style>

@@ -16,7 +16,7 @@
         WiFi mode
       </el-button>
       <el-button v-show="multipleSelection.length" v-waves class="filter-item" type="primary" icon="el-icon-set-up" @click="dialogShowGroup(true)">
-        Group Edit
+        Bulk Edit
       </el-button>
     </div>
 
@@ -76,7 +76,7 @@
       </el-table-column>
       <el-table-column label="Task" align="center" width="140" class-name="small-padding fixed-width">
         <template #default="{row}">
-          <el-select :value="row.current_task" placeholder="Task" :loading="listLoading" @change="handle_task($event, row)">
+          <el-select :value="row.current_task" placeholder="Task" :loading="listLoading" style="width: 100%" @change="handle_task($event, row)">
             <el-option
               v-for="item in row.task_list"
               :key="item"
@@ -325,7 +325,11 @@ export default {
 
     // Function for bulk edit component
     dialogShowGroup(val) {
-      if (val) { this.temp_wifi = { 'ssid': this.wifi_set.ssid, 'password': this.wifi_set.password } }
+      if (val) {
+        this.temp_wifi = { 'ssid': this.wifi_set.ssid, 'password': this.wifi_set.password }
+      } else {
+        this.$refs.multipleTable.clearSelection()
+      }
       this.panel_on_group = val
     },
     syncGroupEdit() {
@@ -417,7 +421,7 @@ export default {
           this.listLoading = false
           row.current_task = val
           this.$message({
-            message: 'task launch success',
+            message: 'Task Launch Success',
             type: 'success'
           })
         })
