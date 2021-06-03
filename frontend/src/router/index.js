@@ -12,27 +12,11 @@ import Layout from '@/layout'
  * all roles can be accessed
  */
 export const constantRoutes = [
-  // {
-  //   path: '/redirect',
-  //   component: Layout,
-  //   hidden: true,
-  //   children: [
-  //     {
-  //       path: '/redirect/:path(.*)',
-  //       component: () => import('@/views/redirect/index')
-  //     }
-  //   ]
-  // },
   {
     path: '/login',
     component: () => import('@/views/login/index'),
     hidden: true
   },
-  // {
-  //   path: '/auth-redirect',
-  //   component: () => import('@/views/login/auth-redirect'),
-  //   hidden: true
-  // },
   {
     path: '/404',
     component: () => import('@/views/error-page/404'),
@@ -50,39 +34,12 @@ export const constantRoutes = [
     children: [
       {
         path: 'dashboard',
-        component: () => import('@/views/dashboard/index'),
+        component: () => import('@/views/dashboard/dashboard-index'),
         name: 'Dashboard',
         meta: { title: 'Dashboard', icon: 'dashboard', affix: true }
       }
     ]
   },
-  // {
-  //   path: '/profile',
-  //   component: Layout,
-  //   redirect: '/profile/index',
-  //   hidden: true,
-  //   children: [
-  //     {
-  //       path: 'index',
-  //       component: () => import('@/views/profile/index'),
-  //       name: 'Profile',
-  //       meta: { title: 'Profile', icon: 'user', noCache: true }
-  //     }
-  //   ]
-  // },
-  // {
-  //   path: '/dict/data/',
-  //   component: Layout,
-  //   hidden: true,
-  //   children: [
-  //     {
-  //       path: '/dict/data/:id?',
-  //       component: () => import('@/views/system/dict/data'),
-  //       name: 'DictData',
-  //       meta: { title: '字典数据明细', icon: 'dict', noCache: false }
-  //     }
-  //   ]
-  // },
   {
     path: '/robots',
     component: Layout,
@@ -92,18 +49,6 @@ export const constantRoutes = [
         component: () => import('@/views/robots/robots-index'),
         name: 'Robots',
         meta: { title: 'Robots', icon: 'user' }
-      }
-    ]
-  },
-  {
-    path: '/monitor',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/monitor/robots-index'),
-        name: 'Monitor',
-        meta: { title: 'Monitor', icon: 'el-icon-cpu' }
       }
     ]
   }

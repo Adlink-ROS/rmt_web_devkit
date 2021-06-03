@@ -16,7 +16,7 @@
         WiFi mode
       </el-button>
       <el-button v-show="multipleSelection.length" v-waves class="filter-item" type="primary" icon="el-icon-set-up" @click="dialogShowGroup(true)">
-        Group Edit
+        Bulk Edit
       </el-button>
     </div>
 
@@ -32,8 +32,8 @@
       style="width: 100%;"
       @selection-change="handleSelectionChange"
     >
-      <el-table-column type="selection" align="center" width="40" />
-      <el-table-column label="Index" type="index" align="center" width="60" />
+      <el-table-column type="selection" align="center" width="45" />
+      <el-table-column label="No." type="index" align="center" width="45" />
       <el-table-column label="Device ID" prop="DeviceID" sortable :sort-orders="['ascending', 'descending']" width="130px" align="center">
         <template #default="{row}">
           <span>{{ row.DeviceID }}</span>

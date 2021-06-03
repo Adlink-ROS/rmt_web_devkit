@@ -1,5 +1,8 @@
 <template>
   <div class="app-container">
+
+    <panel-group :total="total" :idle="idle" :running="running" :maintenance="maintenance" />
+
     <el-table
       ref="multipleTable"
       :key="tableKey"
@@ -11,7 +14,7 @@
       highlight-current-row
       style="width: 100%;"
     >
-      <el-table-column label="Index" type="index" align="center" width="80" />
+      <el-table-column label="No." type="index" align="center" width="80" />
       <el-table-column label="Device ID" prop="deviceID" sortable :sort-orders="['ascending', 'descending']" width="110px" align="center">
         <template #default="{row}">
           <span>{{ row.deviceID }}</span>
@@ -55,17 +58,21 @@
 
 <script>
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import PanelGroup from './components/PanelGroup'
 import io from 'socket.io-client'
 
 export default {
   name: 'ComplexTable',
-  components: { Pagination },
+  components: { Pagination, PanelGroup },
   data() {
     return {
       tableKey: 0,
       percentage: 0,
       list: [],
       total: 0,
+      idle: 0,
+      running: 0,
+      maintenance: 0,
       isIndeterminate: true,
       listLoading: true,
       listQuery: {
@@ -93,7 +100,27 @@ export default {
       this.socket.on('monitor_robot', function(data) {
         _this.list = data.items
         _this.total = data.total
+        console.log(data.items)
+        _this.countStatusNum(data.items)
         _this.listLoading = false
+      })
+    },
+    countStatusNum(items) {
+      var idle_cnt = 0
+      var running_cnt = 0
+      if (Object.keys(items).length === 0) {
+        this.idle = 0
+        this.running = 0
+        return
+      }
+      items.forEach(item => {
+        if (item.task_mode === 'Idle') {
+          idle_cnt++
+        } else {
+          running_cnt++
+        }
+        this.idle = idle_cnt
+        this.running = running_cnt
       })
     },
     usageColorMethod(percentage) {
