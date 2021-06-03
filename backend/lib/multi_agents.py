@@ -6,16 +6,13 @@ import sys, getopt
 import atexit
 from signal import signal, SIGINT
 
-import os
-os.environ['LD_LIBRARY_PATH'] = os.getcwd()
-
 def usage():
     print("Usage:")
     print("\t-i <net_interface>")
     print("\t-n <device_num>")
     print("\t-s <start_id>")
     print("Example:")
-    print("\tpython multi_agents.py -i wlp2s0 -n 5 -s 5566")    
+    print("\tpython multi_agents.py -i wlp2s0 -n 5 -s 5566")
 
 def worker(inf, id):
     """thread worker function"""
@@ -52,7 +49,7 @@ def main(args):
         elif o in ("-s", "--start_id"):
             start_id = int(a)
         else:
-            assert False, "unhandled option"    
+            assert False, "unhandled option"
 
     print("interface=%s, number=%d, start_id=%d" % (interface, number, start_id))
 
