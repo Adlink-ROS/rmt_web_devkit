@@ -106,8 +106,8 @@ export default {
       })
     },
     countStatusNum(items) {
-      var idle_cnt = 0
-      var running_cnt = 0
+      var idleCnt = 0
+      var runningCnt = 0
       if (Object.keys(items).length === 0) {
         this.idle = 0
         this.running = 0
@@ -115,12 +115,12 @@ export default {
       }
       items.forEach(item => {
         if (item.task_mode === 'Idle') {
-          idle_cnt++
+          idleCnt++
         } else {
-          running_cnt++
+          runningCnt++
         }
-        this.idle = idle_cnt
-        this.running = running_cnt
+        this.idle = idleCnt
+        this.running = runningCnt
       })
     },
     usageColorMethod(percentage) {
