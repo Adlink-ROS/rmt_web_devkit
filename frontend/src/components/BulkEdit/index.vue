@@ -28,7 +28,7 @@
               <el-col :span="7"><span>Device ID</span></el-col>
               <el-col :span="7"><span>Hostname</span></el-col>
               <el-col :span="3"><span>Task</span></el-col>
-              <el-checkbox v-model="sameAsFirst" border @change="TaskToFirst">same as first agent</el-checkbox>
+              <el-checkbox v-model="sameAsFirst" border @change="TaskToFirst">apply the first to all</el-checkbox>
             </el-row>
             <div v-for="device in deviceList" :key="device.DeviceID">
               <el-row style="margin-top:10px">
