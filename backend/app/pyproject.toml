@@ -13,7 +13,7 @@ passlib = "^1.7.4"
 celery = "^5.0.5"
 pandas = "^1.2.1"
 numpy = "^1.20.0"
-uvicorn = "^0.13.3"
+uvicorn = {extras = ["standard"], version = "^0.14.0"}
 tenacity = "^6.3.1"
 emails = "^0.6"
 email-validator = "^1.1.2"
@@ -26,6 +26,9 @@ redis = "^3.5.3"
 bcrypt = "^3.2.0"
 python-multipart = "^0.0.5"
 fastapi-utils = "^0.2.1"
+pycairo = "^1.20.1"
+PyGObject = "^3.40.1"
+websocket = "^0.2.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.2"
