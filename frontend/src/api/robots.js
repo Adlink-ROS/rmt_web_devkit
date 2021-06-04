@@ -7,7 +7,7 @@ export function fetchRobotList() {
   })
 }
 
-export function set_config_diff(data) {
+export function setConfigDiff(data) {
   return request({
     url: '/robots/set_diff_config_by_id',
     method: 'put',
@@ -15,7 +15,7 @@ export function set_config_diff(data) {
   })
 }
 
-export function set_config_same(data) {
+export function setConfigSame(data) {
   return request({
     url: '/robots/set_same_config_by_id',
     method: 'put',
@@ -23,7 +23,7 @@ export function set_config_same(data) {
   })
 }
 
-export function get_config_all(data) {
+export function getConfigAll(data) {
   return request({
     url: '/robots/get_config_for_all',
     method: 'post',
