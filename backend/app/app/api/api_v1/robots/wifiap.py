@@ -17,11 +17,11 @@ class network_client():
         self.client = NM.Client.new(None)
         self.response = {}
 
-    def create_profile(self, ssid, password, band):
+    def create_profile(self, uuid_str, ssid, password, band):
         profile = NM.SimpleConnection.new()
         s_con = NM.SettingConnection.new()
         s_con.set_property(NM.SETTING_CONNECTION_ID, "RMTHost")
-        s_con.set_property(NM.SETTING_CONNECTION_UUID, str(uuid.uuid4()))
+        s_con.set_property(NM.SETTING_CONNECTION_UUID, uuid_str)
         s_con.set_property(NM.SETTING_CONNECTION_TYPE, "802-11-wireless")
         s_con.set_property(NM.SETTING_CONNECTION_AUTOCONNECT, False)
 
@@ -93,7 +93,8 @@ class network_client():
         self.main_loop.quit()
 
     def wifi_ap_init(self):
-        con = self.create_profile("RMTserver", "adlinkros", "bg")
+        uuid_str = str(uuid.uuid4())
+        con = self.create_profile(uuid_str, "RMTserver", "adlinkros", "bg")
         self.client.add_connection_async(con, False, None, self.added_cb, None)
         self.main_loop.run()
     
@@ -148,8 +149,9 @@ class network_client():
         if wifi_set["band"] not in band_code:
             raise HTTPException(status_code=400, detail="Invalid property: Band")
         
-        new_con = self.create_profile(wifi_set["ssid"], wifi_set["password"], band_code[wifi_set["band"]])
         remote_con = self.client.get_connection_by_id("RMTHost")
+        uuid_str = remote_con.get_setting_connection().get_uuid()
+        new_con = self.create_profile(uuid_str, wifi_set["ssid"], wifi_set["password"], band_code[wifi_set["band"]])
         remote_con.replace_settings_from_connection(new_con)
         remote_con.commit_changes_async(True, None, self.modify_cb, None)
         self.main_loop.run()
