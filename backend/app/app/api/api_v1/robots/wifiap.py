@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi_utils.cbv import cbv
 from app import models, schemas
 import gi
+import rmt_py_wrapper
 
 gi.require_version("NM", "1.0")
 from gi.repository import GLib, NM
@@ -62,6 +63,7 @@ class network_client():
             callback_log = "Connection successfully activate"
             self.response["active"] = "0"
         print(callback_log)
+        rmt_py_wrapper.rmt_reinit_server()
         self.main_loop.quit()
 
     def deactive_cb(self, client, result, data):
@@ -72,6 +74,7 @@ class network_client():
             callback_log = "Connection successfully deactivate"
             self.response["deactive"] = "0"
         print(callback_log)
+        rmt_py_wrapper.rmt_reinit_server()
         self.main_loop.quit()
 
     def added_cb(self, client, result, data):
