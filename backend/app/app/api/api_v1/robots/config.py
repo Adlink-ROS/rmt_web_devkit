@@ -179,10 +179,18 @@ def rmt_set_seq_config_by_id(device_list, config_dict):
         # Increment config value for each loop
         for key, value in config_dict.items():
             if i > 0:
-                new_value = re.sub(r'[0-9]+$',
-                    lambda x: f"{str(int(x.group())+1).zfill(len(x.group()))}", 
-                    value)
-                value = new_value
+                if key == 'ip_address' and len(value.split())>1:
+                    config_list = value.split()
+                    config_list[1] = re.sub(r'[0-9]+$',
+                        lambda x: f"{str(int(x.group())+1).zfill(len(x.group()))}", 
+                        config_list[1])
+                    new_value = ' '.join(config_list)
+                    value = new_value
+                else:
+                    new_value = re.sub(r'[0-9]+$',
+                        lambda x: f"{str(int(x.group())+1).zfill(len(x.group()))}", 
+                        value)
+                    value = new_value
             config_str += key + ':' + value + ';'
 
         # Save config data to data_info_array

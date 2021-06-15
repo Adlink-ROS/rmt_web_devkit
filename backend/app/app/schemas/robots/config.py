@@ -23,7 +23,7 @@ class SetDiffConfigById_ReqBody(BaseModel):
 class SetSequentialConfigById_ReqBody(BaseModel):
     device_list: List[str] = ["5566", "5567", "5568", "5569"]
     numbering_config_start: Dict[str, str] = {
-        "ip": "192.168.0.1",
+        "ip_address": "manual 192.168.0.1 24",
         "hostname": "roscube1"
     }
 
