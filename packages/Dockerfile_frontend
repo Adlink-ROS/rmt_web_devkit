@@ -1,0 +1,20 @@
+FROM ubuntu:focal
+MAINTAINER ChenYing Kuo <chenying.kuo@adlinktech.com>
+
+# Install the necessary tools
+RUN apt-get -qq update
+RUN apt-get -qqy install git vim build-essential curl
+
+# Install nodejs
+RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
+RUN apt-get -qqy install nodejs
+
+# Install RMT
+RUN cd /root/ && \
+    git clone https://github.com/Adlink-ROS/rmt_web_devkit
+RUN cd /root/rmt_web_devkit/frontend && \
+    npm install
+
+WORKDIR /root/rmt_web_devkit/frontend
+
+CMD npm run dev
