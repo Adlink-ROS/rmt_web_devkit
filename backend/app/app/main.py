@@ -73,7 +73,9 @@ if __name__ == '__main__':
     import uvicorn
     if len(my_interface) > 0:
         print("Use interface({}) for RMT server".format(my_interface))
-        rmt_py_wrapper.rmt_server_config(my_interface)
+        rmt_py_wrapper.rmt_server_configure(my_interface, 0)
+    else:
+        rmt_py_wrapper.rmt_server_configure("", 0)
     rmt_py_wrapper.rmt_server_init()
     uvicorn.run(app='main:app', host=my_ip, port=my_port)
     rmt_py_wrapper.rmt_server_deinit()
