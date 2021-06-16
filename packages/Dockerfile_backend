@@ -3,8 +3,9 @@ FROM ubuntu:focal
 MAINTAINER Ting Chang <ting.chang@adlinktech.com>
 
 # Install the necessary tools
-RUN apt -qq update
-RUN apt -qqy install git vim build-essential python3 python-is-python3 python3-distutils python3-pip curl
+RUN apt-get -qq update
+RUN apt-get -qqy install git vim build-essential python3 python-is-python3 python3-distutils python3-pip curl
+RUN apt-get install libcairo2-dev libgirepository1.0-dev
 
 # Install poetry and configure env
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | POETRY_HOME=/opt/poetry python && \
