@@ -1,4 +1,5 @@
 #!/bin/bash
 
 WORK_DIR=$PWD
-python $WORK_DIR/app/app/main.py -i 0.0.0.0 -p 8080
+cd $WORK_DIR/app
+poetry run python app/main.py -i 0.0.0.0 -p 8080
