@@ -1,104 +1,67 @@
 # rmt_web_devkit
 
-The Web example for ADLINK ROS Management Tool (RMT) on Ubuntu 20.04
+This is Web example for ADLINK Robot Management Tool (RMT) on Ubuntu 20.04
 
-## **Frontend**
+# Usage
 
-### SOP:
+* Download source code
 
-Install the tools and packages for development
-
-```bash
-sudo apt update
-sudo apt install -y git npm
 ```
-
-Download this repo and install dependent packages
-
-```bash
+sudo apt update && sudo apt install -y git curl
 cd $HOME
 git clone https://github.com/Adlink-ROS/rmt_web_devkit.git
+```
+
+## Frontend
+
+* Install necessary packages
+
+```bash
+# Install nodejs (you can use your own way to install, for example, nvm)
+curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
+
+* Install dependent packages
+
+```bash
 cd $HOME/rmt_web_devkit/frontend
 npm install
 ```
     
-Start the frontend
+* Run the frontend
 
 ```bash
 cd $HOME/rmt_web_devkit/frontend
 ./start_frontend.sh
 ```
 
-## **Backend**
+## Backend
 
-There are two optons you can choose for the backend:
-
-### Option 1 - Docker container
-
-Add docker into sudo group (Optional):
+* Install necessary packages
 
 ```bash
-sudo groupadd docker
-sudo gpasswd -a $USER docker
-# After logout and login
-groups
-# You'll see the current user belongs to docker group
+sudo apt install -y python3.8-dev
+sudo apt install -y libcairo2-dev libgirepository1.0-dev libnm-dev
+# install poetry
+curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+# Add poetry binary to path
+echo 'export PATH="$HOME/.poetry/bin:$PATH"' >> ~/.bashrc
 ```
 
-Build image from Dockerfile:
+* Install dependent packages
 
 ```bash
-wget https://raw.githubusercontent.com/Adlink-ROS/rmt_web_devkit/main/backend/Dockerfile
-docker build -t="rmt-backend" . 
-```
-
-Start the container from the built image:
-
-```bash
-docker run -it -p 8080:8080 --network=host --rm rmt-backend
-```
-
-Start the backend in the container:
-
-```bash
-cd /root/rmt_web_devkit/backend
-./start_backend.sh
-```
-
-Then, open the URL in the host browser
-
-```bash
-http://0.0.0.0:8080/docs
-```
-
-### Option 2 - Setup the Env on host:
-
-Install the tools and packages for development
-
-```bash
-sudo apt update
-sudo apt install -y git python-is-python3 curl
-```
-
-Download this repo and install dependent packages
-
-```bash
-cd $HOME
-git clone https://github.com/Adlink-ROS/rmt_web_devkit.git
-
+# Install RMT library
 cd $HOME/rmt_web_devkit/backend/lib
 sudo dpkg -i *.deb
-
+# Install poetry
 cd $HOME/rmt_web_devkit/backend/app
-curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+poetry env use $(pyenv which python3.8)
 poetry install
-# Optional: if you want to install packages in native system
-python3 -m pip install --upgrade pip
-poetry export -f requirements.txt --output requirements.txt
-pip install -r requirements.txt
 ```
 
-Start the backend
+* Run the backend
 
 ```bash
 cd $HOME/rmt_web_devkit/backend
@@ -107,9 +70,9 @@ cd $HOME/rmt_web_devkit/backend
 
 The default login account/password is ros/adlinkros.
 
-## Development notes
+# Development notes
 
-- Username/password of FastAPI
+* Username/password of FastAPI
 
     To change the default username and password of FastAPI server, please modify below codes in the file ```backend/app/app/core/security.py```
 
