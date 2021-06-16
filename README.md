@@ -57,7 +57,7 @@ cd $HOME/rmt_web_devkit/backend/lib
 sudo dpkg -i *.deb
 # Install poetry
 cd $HOME/rmt_web_devkit/backend/app
-poetry env use $(pyenv which python3.8)
+poetry env use $(which python3.8)
 poetry install
 ```
 
@@ -69,6 +69,35 @@ cd $HOME/rmt_web_devkit/backend
 ```
 
 The default login account/password is ros/adlinkros.
+
+# Run with container
+
+You can also use docker to run the RMT web server.
+
+* Install RMT web server.
+  - It'll take a long time.
+
+```bash
+cd $HOME/rmt_web_devkit/packages
+./install.sh
+```
+
+* Start/Stop the web server
+
+```bash
+cd $HOME/rmt_web_devkit/packages
+# start
+./rmt_server.sh start
+# stop
+./rmt_server.sh stop
+```
+
+* Uninstall the web server
+
+```bash
+cd $HOME/rmt_web_devkit/packages
+./uninstall.sh
+```
 
 # Development notes
 
