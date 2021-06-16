@@ -6,6 +6,8 @@ import socket
 
 # TO SUPPORT RUN python main.py in windows,but I use python "app/main.py" to start in liunx
 os.sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+# support to get correct rmt_library
+sys.path.append('/usr/lib/python3/dist-packages')
 
 import fastapi
 from fastapi import routing, FastAPI
