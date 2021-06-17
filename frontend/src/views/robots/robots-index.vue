@@ -332,10 +332,25 @@ export default {
       }
       this.bulkPanelSwitch = val
     },
-    syncGroupEdit() {
-      this.multipleSelection.forEach(element => {
-        this.wifiClientList[element.DeviceID] = Object.assign({}, this.tempWifi)
-      })
+    syncGroupEdit(configName) {
+      if (configName === 'wifi') {
+        this.multipleSelection.forEach(element => {
+          this.wifiClientList[element.DeviceID] = Object.assign(this.wifiClientList[element.DeviceID],
+            (({ ssid, password }) => ({ ssid, password }))(this.tempWifi))
+        })
+      } else if (configName === 'IPv4') {
+        this.multipleSelection.forEach((element) => {
+          this.wifiClientList[element.DeviceID] = Object.assign(this.wifiClientList[element.DeviceID],
+            (({ ipMethod, ipArray }) => ({ ipMethod, ipArray }))(this.tempWifi))
+        })
+      } else if (configName === 'IPv4Seq') {
+        this.multipleSelection.forEach((element, index) => {
+          var templateIp = JSON.parse(JSON.stringify(this.tempWifi))
+          this.wifiClientList[element.DeviceID] = Object.assign(this.wifiClientList[element.DeviceID],
+            (({ ipMethod, ipArray }) => ({ ipMethod, ipArray }))(templateIp))
+          this.wifiClientList[element.DeviceID].ipArray['IP Address'][3] = String(index + +this.wifiClientList[element.DeviceID].ipArray['IP Address'][3])
+        })
+      }
     },
 
     // Send request for config edit panel and update table

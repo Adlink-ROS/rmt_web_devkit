@@ -180,7 +180,7 @@ export default {
     },
     wifiToAp(val) {
       if (val) {
-        this.wifiSet = Object.assign({}, this.tempWifi)
+        this.wifiSet = Object.assign(this.wifiSet, this.tempWifi)
       } else {
         this.wifiSet = { 'ssid': '', 'password': '' }
       }
@@ -195,31 +195,34 @@ export default {
         tempData = { 'device_list': Array.from(this.deviceList, device => device.DeviceID.toString(10)),
           'config_dict': { 'hostname': this.hostname }}
         setConfigSame(tempData).then(response => {
-          responseVarify(response)
+          if (responseVarify(response)) {
+            this.deviceList.forEach((element) => { element.Hostname = this.hostname })
+          }
           this.waitRequest = false
         })
-        this.deviceList.forEach((element) => { element.Hostname = this.hostname })
       } else if (this.currentTabName === 'WiFi') {
         tempData = { 'device_list': Array.from(this.deviceList, device => device.DeviceID.toString(10)),
           'config_dict': { 'wifi': `${this.wifiSet.ssid} ${this.wifiSet.password}` }}
         setConfigSame(tempData).then(response => {
-          responseVarify(response)
+          if (responseVarify(response)) {
+            this.tempWifi['ssid'] = this.wifiSet.ssid
+            this.tempWifi['password'] = this.wifiSet.password
+            this.$emit('syncData', this.currentTabName)
+          }
           this.waitRequest = false
         })
-        this.tempWifi['ssid'] = this.wifiSet.ssid
-        this.tempWifi['password'] = this.wifiSet.password
-        this.$emit('syncData')
       } else if (this.currentTabName === 'Task') {
         tempData = { 'device_config_json': {}}
         this.deviceList.forEach((element) => {
           tempData['device_config_json'][element.DeviceID] = { 'task_mode': this.AgentCurrentTasks[element.DeviceID] }
         })
         setConfigDiff(tempData).then(response => {
-          responseVarify(response)
+          if (responseVarify(response)) {
+            this.deviceList.forEach((element) => {
+              element['current_task'] = this.AgentCurrentTasks[element.DeviceID]
+            })
+          }
           this.waitRequest = false
-        })
-        this.deviceList.forEach((element) => {
-          element['current_task'] = this.AgentCurrentTasks[element.DeviceID]
         })
       } else if (this.currentTabName === 'IPv4') {
         if (this.ipMethod === 'manual') {
@@ -240,13 +243,25 @@ export default {
           if (this.ipSequential) {
             tempData['numbering_config_start'] = { 'ip_address': configInput }
             setConfigSequential(tempData).then(response => {
-              responseVarify(response)
+              if (responseVarify(response)) {
+                Object.assign(this.tempWifi, {
+                  'ipMethod': 'manual',
+                  'ipArray': this.agentIp
+                })
+                this.$emit('syncData', 'IPv4Seq')
+              }
               this.waitRequest = false
             })
           } else {
             tempData['config_dict'] = { 'ip_address': configInput }
             setConfigSame(tempData).then(response => {
-              responseVarify(response)
+              if (responseVarify(response)) {
+                Object.assign(this.tempWifi, {
+                  'ipMethod': 'manual',
+                  'ipArray': this.agentIp
+                })
+                this.$emit('syncData', this.currentTabName)
+              }
               this.waitRequest = false
             })
           }
@@ -254,7 +269,17 @@ export default {
           tempData = { 'device_list': Array.from(this.deviceList, device => device.DeviceID.toString(10)),
             'config_dict': { 'ip_address': 'auto' }}
           setConfigSame(tempData).then(response => {
-            responseVarify(response)
+            if (responseVarify(response)) {
+              Object.assign(this.tempWifi, {
+                'ipMethod': 'auto',
+                'ipArray': {
+                  'IP Address': Array(4).fill(''),
+                  'Subnet Mask': Array(4).fill(''),
+                  'Gateway': Array(4).fill('')
+                }
+              })
+              this.$emit('syncData', this.currentTabName)
+            }
             this.waitRequest = false
           })
         }
