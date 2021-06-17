@@ -100,7 +100,6 @@ export default {
       this.socket.on('monitor_robot', function(data) {
         _this.list = data.items
         _this.total = data.total
-        console.log(data.items)
         _this.countStatusNum(data.items)
         _this.listLoading = false
       })
