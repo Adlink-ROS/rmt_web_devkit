@@ -1,0 +1,21 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+jobs:
+  build_2004:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Packages
+        working-directory: ./
+        run: version=`cat packages/version.txt` && cp -r packages rmt_webserver_${version} && tar zvcf rmt_webserver_${version}.tar.gz rmt_webserver_${version}
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ./*.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
