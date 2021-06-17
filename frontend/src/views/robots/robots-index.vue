@@ -135,6 +135,29 @@
             </el-form-item>
           </el-form>
         </el-tab-pane>
+        <el-tab-pane label="IPv4" name="IPv4">IPv4 Address
+          <el-form label-position="left" label-width="90px" style="width: 90%; margin-left:50px; margin-top:20px">
+            <el-row>
+              <el-radio v-model="tempWifi.ipMethod" label="auto">Automatic (DHCP)</el-radio>
+              <el-radio v-model="tempWifi.ipMethod" label="manual">Manual</el-radio>
+            </el-row>
+            <div v-for="(ipArray, key) in tempWifi.ipArray" :key="key">
+              <el-row class="ip-header">
+                <el-col :span="5"><span>{{ key }}</span></el-col>
+              </el-row>
+              <el-row>
+                <el-input
+                  v-for="(segment, index) in ipArray"
+                  :key="index"
+                  v-model="ipArray[index]"
+                  maxlength="3"
+                  :disabled="tempWifi.ipMethod=='auto'"
+                  style="width: 12%"
+                />
+              </el-row>
+            </div>
+          </el-form>
+        </el-tab-pane>
       </el-tabs>
       <div slot="footer" class="dialog-footer">
         <el-button v-waves @click="editPanelSwitch = false">
@@ -169,7 +192,7 @@
 </template>
 
 <script>
-import { fetchRobotList, setConfigDiff, getConfigAll, fetchWifi } from '@/api/robots'
+import { fetchRobotList, setConfigDiff, getConfigAll, fetchWifi, responseVarify } from '@/api/robots'
 import waves from '@/directive/waves' // waves directive
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import UploadExcelComponent from '@/components/UploadExcel/index_robot.vue'
@@ -200,20 +223,10 @@ export default {
         page: 1,
         limit: 20
       },
-      wifiSet: {
-        'ssid': '',
-        'password': '',
-        'band': '2.4 GHz',
-        'hotspot_enable': false
-      },
+      wifiSet: {},
       wifiClientList: {},
-      tempWifi: {
-        ssid: '',
-        password: ''
-      },
-      temp: {
-        index: undefined
-      },
+      tempWifi: {},
+      temp: {},
       locateList: [],
       bulkPanelSwitch: false,
       editPanelSwitch: false,
@@ -230,7 +243,7 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      var config = { 'config_list': ['wifi', 'task_list', 'task_mode'] }
+      var config = { 'config_list': ['wifi', 'task_list', 'task_mode', 'ip_address'] }
       fetchRobotList().then(response => {
         this.list = response.data.items
         this.total = response.data.total
@@ -238,13 +251,25 @@ export default {
       }).then(() => getConfigAll(config)).then(response => {
         Object.keys(response.data).forEach((element) => {
           var splitWifiString = response.data[element].wifi.split(' ')
-          if (splitWifiString.length === 4) {
-            this.wifiClientList[element] = { 'ssid': splitWifiString[1], 'password': splitWifiString[3] }
+          var splitIpString = response.data[element]['ip_address'].split(' ')
+          this.wifiClientList[element] = { 'ssid': splitWifiString[1], 'password': splitWifiString[3] }
+          this.wifiClientList[element]['ipMethod'] = splitIpString[0]
+          if (splitIpString.length > 1) {
+            this.wifiClientList[element]['ipArray'] = {
+              'IP Address': splitIpString[1].split('.'),
+              'Subnet Mask': this.cidrToSubnet(splitIpString[2])
+            }
+            if (splitIpString.length > 3) {
+              this.wifiClientList[element]['ipArray']['Gateway'] = splitIpString[3].split('.')
+            } else {
+              this.wifiClientList[element]['ipArray']['Gateway'] = Array(4).fill('')
+            }
           } else {
-            this.$message({
-              message: 'Agent WiFi Client Got Error',
-              type: 'warning'
-            })
+            this.wifiClientList[element]['ipArray'] = {
+              'IP Address': Array(4).fill(''),
+              'Subnet Mask': Array(4).fill(''),
+              'Gateway': Array(4).fill('')
+            }
           }
           var splitTaskString = response.data[element].task_list.split(' ')
           var listIndex = this.list.findIndex(agent => agent.DeviceID === element)
@@ -366,7 +391,7 @@ export default {
     },
     handleUpdate(row) {
       this.temp = Object.assign({}, row) // copy obj
-      this.tempWifi = Object.assign({}, this.wifiClientList[this.temp.DeviceID])
+      this.tempWifi = JSON.parse(JSON.stringify(this.wifiClientList[this.temp.DeviceID]))
       this.sameAsAP = false
       this.editPanelSwitch = true
       this.$nextTick(() => {
@@ -378,21 +403,34 @@ export default {
         if (valid) {
           this.waitRequest = true
           var tempData = { 'device_config_json': { [this.temp.DeviceID]: {}}}
-          var wifiClientConfig = `${this.tempWifi.ssid} ${this.tempWifi.password}`
-          tempData['device_config_json'][this.temp.DeviceID]['hostname'] = this.temp.Hostname
-          tempData['device_config_json'][this.temp.DeviceID]['wifi'] = wifiClientConfig
-          setConfigDiff(tempData).then(() => {
-            const index = this.list.findIndex(v => v.DeviceID === this.temp.DeviceID)
-            this.list.splice(index, 1, this.temp)
-            this.wifiClientList[this.temp.DeviceID] = Object.assign({}, this.tempWifi)
+          if (this.tempWifi.ipMethod === 'manual') {
+            const prefix = this.checkIpProperty(this.tempWifi.ipArray)
+            if (!prefix) {
+              this.$message({
+                message: 'Invalid value of IPv4 Address',
+                type: 'warning'
+              })
+              this.waitRequest = false
+              return
+            }
+            var configAddress = `manual ${this.tempWifi.ipArray['IP Address'].join('.')} ${prefix}`
+            if (!this.tempWifi.ipArray['Gateway'].every((element) => element === '') && this.checkIpAddress(this.tempWifi.ipArray, 'Gateway')) {
+              configAddress = configAddress + ' ' + this.tempWifi.ipArray['Gateway'].join('.')
+            }
+            tempData['device_config_json'][this.temp.DeviceID] = {
+              'hostname': this.temp.Hostname,
+              'wifi': `${this.tempWifi.ssid} ${this.tempWifi.password}`,
+              'ip_address': configAddress
+            }
+          }
+          setConfigDiff(tempData).then(response => {
+            if (responseVarify(response)) {
+              const index = this.list.findIndex(v => v.DeviceID === this.temp.DeviceID)
+              this.list.splice(index, 1, this.temp)
+              this.wifiClientList[this.temp.DeviceID] = Object.assign(this.wifiClientList[this.temp.DeviceID], this.tempWifi)
+              this.editPanelSwitch = false
+            }
             this.waitRequest = false
-            this.editPanelSwitch = false
-            this.$notify({
-              title: 'Success',
-              message: 'Update Successfully',
-              type: 'success',
-              duration: 2000
-            })
           })
         }
       })
@@ -441,8 +479,39 @@ export default {
           })
         })
       }
+    },
+
+    cidrToSubnet(bitCount) {
+      var mask = []
+      var n
+      for (var i = 0; i < 4; i++) {
+        n = Math.min(bitCount, 8)
+        mask.push(String(256 - Math.pow(2, 8 - n)))
+        bitCount -= n
+      }
+      return mask
+    },
+    checkIpProperty(agentIp) {
+      if (!this.checkIpAddress(agentIp, 'IP Address') || !this.checkIpAddress(agentIp, 'Subnet Mask')) {
+        return false
+      } else if (!agentIp['Gateway'].every((element) => element === '') && !this.checkIpAddress(agentIp, 'Gateway')) {
+        return false
+      }
+      var bitcode = agentIp['Subnet Mask'].reduce((total, current) => {
+        return total + Number(current).toString(2).padStart(8, '0')
+      }, '')
+
+      if (bitcode.split('01').length >= 2) {
+        return false
+      }
+      const prefix = bitcode.split('1').length - 1
+
+      return prefix
+    },
+    checkIpAddress(agentIp, ipArray) {
+      var ipCheck = agentIp[ipArray].join('.')
+      return (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ipCheck))
     }
   }
 }
 </script>
-
