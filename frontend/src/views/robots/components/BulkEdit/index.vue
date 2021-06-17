@@ -85,11 +85,13 @@
 </template>
 
 <script>
-import { setConfigSame, setConfigDiff, setConfigSequential, responseVarify } from '@/api/robots'
+import { setConfigSame, setConfigDiff, setConfigSequential } from '@/api/robots'
 import waves from '@/directive/waves' // waves directive
+import agentItem from '../../mixins/agent'
 
 export default {
   directives: { waves },
+  mixins: [agentItem],
   props: {
     dialogShow: {
       type: Boolean,
@@ -195,7 +197,7 @@ export default {
         tempData = { 'device_list': Array.from(this.deviceList, device => device.DeviceID.toString(10)),
           'config_dict': { 'hostname': this.hostname }}
         setConfigSame(tempData).then(response => {
-          if (responseVarify(response)) {
+          if (this.responseVarify(response)) {
             this.deviceList.forEach((element) => { element.Hostname = this.hostname })
           }
           this.waitRequest = false
@@ -204,7 +206,7 @@ export default {
         tempData = { 'device_list': Array.from(this.deviceList, device => device.DeviceID.toString(10)),
           'config_dict': { 'wifi': `${this.wifiSet.ssid} ${this.wifiSet.password}` }}
         setConfigSame(tempData).then(response => {
-          if (responseVarify(response)) {
+          if (this.responseVarify(response)) {
             this.tempWifi['ssid'] = this.wifiSet.ssid
             this.tempWifi['password'] = this.wifiSet.password
             this.$emit('syncData', this.currentTabName)
@@ -217,7 +219,7 @@ export default {
           tempData['device_config_json'][element.DeviceID] = { 'task_mode': this.AgentCurrentTasks[element.DeviceID] }
         })
         setConfigDiff(tempData).then(response => {
-          if (responseVarify(response)) {
+          if (this.responseVarify(response)) {
             this.deviceList.forEach((element) => {
               element['current_task'] = this.AgentCurrentTasks[element.DeviceID]
             })
@@ -243,7 +245,7 @@ export default {
           if (this.ipSequential) {
             tempData['numbering_config_start'] = { 'ip_address': configInput }
             setConfigSequential(tempData).then(response => {
-              if (responseVarify(response)) {
+              if (this.responseVarify(response)) {
                 Object.assign(this.tempWifi, {
                   'ipMethod': 'manual',
                   'ipArray': this.agentIp
@@ -255,7 +257,7 @@ export default {
           } else {
             tempData['config_dict'] = { 'ip_address': configInput }
             setConfigSame(tempData).then(response => {
-              if (responseVarify(response)) {
+              if (this.responseVarify(response)) {
                 Object.assign(this.tempWifi, {
                   'ipMethod': 'manual',
                   'ipArray': this.agentIp
@@ -269,7 +271,7 @@ export default {
           tempData = { 'device_list': Array.from(this.deviceList, device => device.DeviceID.toString(10)),
             'config_dict': { 'ip_address': 'auto' }}
           setConfigSame(tempData).then(response => {
-            if (responseVarify(response)) {
+            if (this.responseVarify(response)) {
               Object.assign(this.tempWifi, {
                 'ipMethod': 'auto',
                 'ipArray': {

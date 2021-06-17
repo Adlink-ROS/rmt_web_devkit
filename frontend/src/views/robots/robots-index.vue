@@ -192,18 +192,20 @@
 </template>
 
 <script>
-import { fetchRobotList, setConfigDiff, getConfigAll, fetchWifi, responseVarify } from '@/api/robots'
+import { fetchRobotList, setConfigDiff, getConfigAll, fetchWifi } from '@/api/robots'
+import agentItem from './mixins/agent'
 import waves from '@/directive/waves' // waves directive
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-import UploadExcelComponent from '@/components/UploadExcel/index_robot.vue'
-import ControlComponent from '@/components/ControlPanel/index.vue'
-import WifiModeComponent from '@/components/WiFiMode/index.vue'
-import BulkEditComponent from '@/components/BulkEdit/index.vue'
+import UploadExcelComponent from './components/UploadExcel'
+import ControlComponent from './components/ControlPanel'
+import WifiModeComponent from './components/WiFiMode'
+import BulkEditComponent from './components/BulkEdit'
 
 export default {
   name: 'ComplexTable',
   components: { Pagination, UploadExcelComponent, ControlComponent, WifiModeComponent, BulkEditComponent },
   directives: { waves },
+  mixins: [agentItem],
   data() {
     return {
       tableKey: 0,
@@ -424,7 +426,7 @@ export default {
             }
           }
           setConfigDiff(tempData).then(response => {
-            if (responseVarify(response)) {
+            if (this.responseVarify(response)) {
               const index = this.list.findIndex(v => v.DeviceID === this.temp.DeviceID)
               this.list.splice(index, 1, this.temp)
               this.wifiClientList[this.temp.DeviceID] = Object.assign(this.wifiClientList[this.temp.DeviceID], this.tempWifi)
