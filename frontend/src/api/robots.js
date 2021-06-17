@@ -56,16 +56,19 @@ export function fetchWifi() {
 }
 
 export function responseVarify(response) {
+  if (response.code !== 20000) {
+    Notification({
+      title: 'Error: Agent request failed',
+      message: 'Request response status error',
+      type: 'error',
+      duration: 5000
+    })
+    return false
+  }
+  var result = true
   for (const [agentID, configList] of Object.entries(response['data'])) {
     for (const [configName, callbackValue] of Object.entries(configList)) {
-      if (callbackValue === '0') {
-        Notification({
-          title: 'Success',
-          message: 'Configuration Update Successfully',
-          type: 'success',
-          duration: 2000
-        })
-      } else {
+      if (callbackValue === '-1') {
         Notification({
           title: 'Error: Agent request failed',
           dangerouslyUseHTMLString: true,
@@ -73,7 +76,17 @@ export function responseVarify(response) {
           type: 'error',
           duration: 5000
         })
+        result = false
       }
     }
   }
+  if (result) {
+    Notification({
+      title: 'Success',
+      message: 'Configuration Update Successfully',
+      type: 'success',
+      duration: 2000
+    })
+  }
+  return result
 }
