@@ -5,7 +5,7 @@
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList()">
         Search
       </el-button>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-refresh" style="width: 110px" @click="list=[]">
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-refresh" style="width: 110px" @click="deviceList=[]">
         Clear
       </el-button>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload()">
@@ -25,7 +25,7 @@
       :key="tableKey"
       v-loading="listLoading"
       :default-sort="{prop: 'DeviceID', order: 'ascending'}"
-      :data="list"
+      :data="deviceList"
       stripe
       fit
       highlight-current-row
@@ -209,7 +209,7 @@ export default {
   data() {
     return {
       tableKey: 0,
-      list: [],
+      deviceList: [],
       total: 0,
       multipleSelection: [],
       downloadLoading: false,
@@ -246,38 +246,42 @@ export default {
     getList() {
       this.listLoading = true
       var config = { 'config_list': ['wifi', 'task_list', 'task_mode', 'ip_address'] }
+
       fetchRobotList().then(response => {
-        this.list = response.data.items
+        this.deviceList = response.data.items
         this.total = response.data.total
         this.locateList = Array(this.total).fill('off')
       }).then(() => getConfigAll(config)).then(response => {
-        Object.keys(response.data).forEach((element) => {
-          var splitWifiString = response.data[element].wifi.split(' ')
-          var splitIpString = response.data[element]['ip_address'].split(' ')
-          this.wifiClientList[element] = { 'ssid': splitWifiString[1], 'password': splitWifiString[3] }
-          this.wifiClientList[element]['ipMethod'] = splitIpString[0]
+        for (const [agentID, configItem] of Object.entries(response.data)) {
+          var listIndex = this.deviceList.findIndex(agent => agent.DeviceID === agentID)
+          var splitWifiString = configItem.wifi.split(' ')
+          var splitIpString = configItem['ip_address'].split(' ')
+          var splitTaskString = configItem.task_list.split(' ')
+          this.wifiClientList[agentID] = { 'ssid': splitWifiString[1], 'password': splitWifiString[3] }
+          this.wifiClientList[agentID]['ipMethod'] = splitIpString[0]
+
           if (splitIpString.length > 1) {
-            this.wifiClientList[element]['ipArray'] = {
+            this.wifiClientList[agentID]['ipArray'] = {
               'IP Address': splitIpString[1].split('.'),
               'Subnet Mask': this.cidrToSubnet(splitIpString[2])
             }
+
             if (splitIpString.length > 3) {
-              this.wifiClientList[element]['ipArray']['Gateway'] = splitIpString[3].split('.')
+              this.wifiClientList[agentID]['ipArray']['Gateway'] = splitIpString[3].split('.')
             } else {
-              this.wifiClientList[element]['ipArray']['Gateway'] = Array(4).fill('')
+              this.wifiClientList[agentID]['ipArray']['Gateway'] = Array(4).fill('')
             }
           } else {
-            this.wifiClientList[element]['ipArray'] = {
+            this.wifiClientList[agentID]['ipArray'] = {
               'IP Address': Array(4).fill(''),
               'Subnet Mask': Array(4).fill(''),
               'Gateway': Array(4).fill('')
             }
           }
-          var splitTaskString = response.data[element].task_list.split(' ')
-          var listIndex = this.list.findIndex(agent => agent.DeviceID === element)
-          this.list[listIndex]['task_list'] = splitTaskString
-          this.list[listIndex]['current_task'] = response.data[element].task_mode
-        })
+
+          this.deviceList[listIndex]['task_list'] = splitTaskString
+          this.deviceList[listIndex]['current_task'] = configItem.task_mode
+        }
         this.listLoading = false
       })
     },
@@ -301,7 +305,7 @@ export default {
     // Function for downloading configuration as excel file
     handleDownload() {
       if (this.multipleSelection.length) {
-        this.ParamOption = Object.keys(this.list[0])
+        this.ParamOption = Object.keys(this.deviceList[0])
         this.downloadLoading = true
       } else {
         this.$message({
@@ -433,8 +437,8 @@ export default {
           }
           setConfigDiff(tempData).then(response => {
             if (this.responseVarify(response)) {
-              const index = this.list.findIndex(v => v.DeviceID === this.temp.DeviceID)
-              this.list.splice(index, 1, this.temp)
+              const index = this.deviceList.findIndex(v => v.DeviceID === this.temp.DeviceID)
+              this.deviceList.splice(index, 1, this.temp)
               this.wifiClientList[this.temp.DeviceID] = Object.assign(this.wifiClientList[this.temp.DeviceID], this.tempWifi)
               this.editPanelSwitch = false
             }
@@ -463,8 +467,8 @@ export default {
 
       results.forEach((element) => {
         tempData['device_config_json'] = { [element['DeviceID']]: { 'hostname': element['Hostname'] }}
-        var listIndex = this.list.findIndex(agent => agent.DeviceID === element['DeviceID'])
-        this.list[listIndex]['Hostname'] = element['Hostname']
+        var listIndex = this.deviceList.findIndex(agent => agent.DeviceID === element['DeviceID'])
+        this.deviceList[listIndex]['Hostname'] = element['Hostname']
       })
       setConfigDiff(tempData).then(() => {
         this.listLoading = false
