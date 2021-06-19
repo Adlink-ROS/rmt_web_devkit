@@ -38,5 +38,26 @@ export default {
       }
       return result
     }
+  },
+  checkIpProperty(agentIp) {
+    if (!this.checkIpAddress(agentIp, 'IP Address') || !this.checkIpAddress(agentIp, 'Subnet Mask')) {
+      return false
+    } else if (!agentIp['Gateway'].every((element) => element === '') && !this.checkIpAddress(agentIp, 'Gateway')) {
+      return false
+    }
+    var bitcode = agentIp['Subnet Mask'].reduce((total, current) => {
+      return total + Number(current).toString(2).padStart(8, '0')
+    }, '')
+
+    if (bitcode.split('01').length >= 2) {
+      return false
+    }
+    const prefix = bitcode.split('1').length - 1
+
+    return prefix
+  },
+  checkIpAddress(agentIp, ipArray) {
+    var ipCheck = agentIp[ipArray].join('.')
+    return (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ipCheck))
   }
 }

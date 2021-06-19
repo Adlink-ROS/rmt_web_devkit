@@ -405,8 +405,11 @@ export default {
         if (valid) {
           this.waitRequest = true
           var tempData = { 'device_config_json': { [this.temp.DeviceID]: {}}}
+          var configAddress
+
           if (this.tempWifi.ipMethod === 'manual') {
             const prefix = this.checkIpProperty(this.tempWifi.ipArray)
+
             if (!prefix) {
               this.$message({
                 message: 'Invalid value of IPv4 Address',
@@ -415,15 +418,18 @@ export default {
               this.waitRequest = false
               return
             }
-            var configAddress = `manual ${this.tempWifi.ipArray['IP Address'].join('.')} ${prefix}`
+
+            configAddress = `manual ${this.tempWifi.ipArray['IP Address'].join('.')} ${prefix}`
+
             if (!this.tempWifi.ipArray['Gateway'].every((element) => element === '') && this.checkIpAddress(this.tempWifi.ipArray, 'Gateway')) {
               configAddress = configAddress + ' ' + this.tempWifi.ipArray['Gateway'].join('.')
             }
-            tempData['device_config_json'][this.temp.DeviceID] = {
-              'hostname': this.temp.Hostname,
-              'wifi': `${this.tempWifi.ssid} ${this.tempWifi.password}`,
-              'ip_address': configAddress
-            }
+          } else { configAddress = 'auto' }
+
+          tempData['device_config_json'][this.temp.DeviceID] = {
+            'hostname': this.temp.Hostname,
+            'wifi': `${this.tempWifi.ssid} ${this.tempWifi.password}`,
+            'ip_address': configAddress
           }
           setConfigDiff(tempData).then(response => {
             if (this.responseVarify(response)) {
@@ -432,6 +438,7 @@ export default {
               this.wifiClientList[this.temp.DeviceID] = Object.assign(this.wifiClientList[this.temp.DeviceID], this.tempWifi)
               this.editPanelSwitch = false
             }
+
             this.waitRequest = false
           })
         }
@@ -453,6 +460,7 @@ export default {
     handleSuccess({ results, header }) {
       this.listLoading = true
       var tempData = { 'device_config_json': {}}
+
       results.forEach((element) => {
         tempData['device_config_json'] = { [element['DeviceID']]: { 'hostname': element['Hostname'] }}
         var listIndex = this.list.findIndex(agent => agent.DeviceID === element['DeviceID'])
@@ -492,27 +500,6 @@ export default {
         bitCount -= n
       }
       return mask
-    },
-    checkIpProperty(agentIp) {
-      if (!this.checkIpAddress(agentIp, 'IP Address') || !this.checkIpAddress(agentIp, 'Subnet Mask')) {
-        return false
-      } else if (!agentIp['Gateway'].every((element) => element === '') && !this.checkIpAddress(agentIp, 'Gateway')) {
-        return false
-      }
-      var bitcode = agentIp['Subnet Mask'].reduce((total, current) => {
-        return total + Number(current).toString(2).padStart(8, '0')
-      }, '')
-
-      if (bitcode.split('01').length >= 2) {
-        return false
-      }
-      const prefix = bitcode.split('1').length - 1
-
-      return prefix
-    },
-    checkIpAddress(agentIp, ipArray) {
-      var ipCheck = agentIp[ipArray].join('.')
-      return (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ipCheck))
     }
   }
 }
