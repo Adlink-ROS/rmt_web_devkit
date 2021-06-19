@@ -61,7 +61,8 @@ export default {
   components: { VueCropper },
   props: {
     user: {
-      type: Object
+      type: Object,
+      default: () => {}
     }
   },
   data() {

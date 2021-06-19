@@ -37,7 +37,7 @@ export function parseTime(time, pattern) {
     s: date.getSeconds(),
     a: date.getDay()
   }
-  const time_str = format.replace(/{(y|m|d|h|i|s|a)+}/g, (result, key) => {
+  const timeStr = format.replace(/{(y|m|d|h|i|s|a)+}/g, (result, key) => {
     let value = formatObj[key]
     // Note: getDay() returns 0 on Sunday
     if (key === 'a') {
@@ -48,7 +48,7 @@ export function parseTime(time, pattern) {
     }
     return value || 0
   })
-  return time_str
+  return timeStr
 }
 
 // 表单重置
@@ -84,7 +84,7 @@ export function selectDictLabel(datas, value) {
 
 // 通用下载方法
 export function download(fileName, query = null) {
-  var download_url = baseURL + '/report/excel_generate/' + fileName
+  var downloadUrl = baseURL + '/report/excel_generate/' + fileName
   // 原方法 无法支持token
   // if (query !== null && query !== undefined) {
   //   download_url = download_url + '?template=0'
@@ -101,15 +101,15 @@ export function download(fileName, query = null) {
     query.template = 0
   }
   return axios({
-    url: download_url,
+    url: downloadUrl,
     method: 'get',
     params: query,
     responseType: 'arraybuffer',
     headers: { 'Authorization': `Bearer ` + getToken() }
   }).then((response) => {
-    let file_name = response.headers['content-disposition'].split('filename=')[1].split(';')[0]
-    file_name = decodeURIComponent(escape(file_name))
-    fileDownload(response.data, file_name) // 如果用方法一 ，这里需要安装 npm install js-file-download --save ,然后引用
+    let fileName = response.headers['content-disposition'].split('filename=')[1].split(';')[0]
+    fileName = decodeURIComponent(escape(fileName))
+    fileDownload(response.data, fileName) // 如果用方法一 ，这里需要安装 npm install js-file-download --save ,然后引用
   })
 }
 
@@ -145,9 +145,9 @@ export function praseStrEmpty(str) {
  * @param {*} children 孩子节点字段 默认 'children'
  * @param {*} rootId 根Id 默认 0
  */
-export function handleTree(data, id, parent_id, children, rootId) {
+export function handleTree(data, id, parentId, children, rootId) {
   id = id || 'id'
-  parent_id = parent_id || 'parent_id'
+  parentId = parentId || 'parent_id'
   children = children || 'children'
   rootId = rootId || 0
   // 对源数据深度克隆
@@ -156,11 +156,11 @@ export function handleTree(data, id, parent_id, children, rootId) {
   const treeData = cloneData.filter(father => {
     const branchArr = cloneData.filter(child => {
       // 返回每一项的子级数组
-      return father[id] === child[parent_id]
+      return father[id] === child[parentId]
     })
     branchArr.length > 0 ? father.children = branchArr : ''
     // 返回第一层
-    return father[parent_id] === rootId
+    return father[parentId] === rootId
   })
   return treeData !== '' ? treeData : data
 }
