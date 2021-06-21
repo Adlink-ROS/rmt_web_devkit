@@ -226,7 +226,7 @@ export default {
         tempData = { 'device_list': Array.from(this.deviceList, device => device.DeviceID.toString(10)) }
         var configInput = `manual ${this.agentIp['IP Address'].join('.')} ${prefix}`
 
-        if (!this.agentIp['Gateway'].every((element) => element === '') && this.checkIpAddress('Gateway')) {
+        if (!this.agentIp['Gateway'].every((element) => element === '') && this.checkIpAddress(this.agentIp, 'Gateway')) {
           configInput = configInput + ' ' + this.agentIp['Gateway'].join('.')
         }
 
