@@ -28,7 +28,7 @@ sudo apt-get install -y nodejs
 cd $HOME/rmt_web_devkit/frontend
 npm install
 ```
-    
+
 * Run the frontend
 
 ```bash
@@ -100,6 +100,14 @@ cd $HOME/rmt_web_devkit/packages
 ```
 
 # Development notes
+
+* Web login from another computer
+
+    To login from different host PC, you have to change `VUE_APP_BASE_API` to the server IP instead of 127.0.0.1. The parameter is located at the file `rmt_web_devkit/frontend/.env.development`.
+
+    ```bash
+    VUE_APP_BASE_API = 'http://127.0.0.1:8080'
+    ```
 
 * Username/password of FastAPI
 
