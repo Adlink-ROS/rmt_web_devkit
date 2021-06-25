@@ -38,7 +38,7 @@ def rmt_get_config_for_all(dev_list, dev_num, config_list):
         device_id = info_list[i].deviceID
         for item in result_list:
             for key in config_list:
-                if key in item:
+                if key == item[0:len(key)]:
                     device_dict[key] = item[len(key)+1:]
         # print(device_dict)
         config_data[device_id] = device_dict
@@ -62,7 +62,6 @@ def rmt_get_same_config_by_id(target_list, target_num, config_list):
     info_num = rmt_py_wrapper.intptr_value(info_num_ptr)
     rmt_py_wrapper.delete_intptr(info_num_ptr) # release info_num_ptr
     
-    # print("=== get config result ===")
     config_data = {}
     for i in range(0, info_num):
         # Split the result string into dictionary data
@@ -71,7 +70,7 @@ def rmt_get_same_config_by_id(target_list, target_num, config_list):
         device_id = info_list[i].deviceID
         for item in result_list:
             for key in config_list:
-                if key in item:
+                if key == item[0:len(key)]:
                     device_dict[key] = item[len(key)+1:]
         # print(device_dict)
         config_data[device_id] = device_dict
