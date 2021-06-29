@@ -21,7 +21,7 @@ elif [ "$1" = "status" ]; then
         echo "Not Running"
     fi
 else
-    echo "Usage: ./rmt_server.sh [command]"
+    echo "Usage: rmt-server [command]"
     echo "command:"
     echo "- start:  run the server"
     echo "- stop:   stop the server"
