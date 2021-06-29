@@ -28,7 +28,7 @@ def rmt_get_config_for_all(dev_list, dev_num, config_list):
     info_list = rmt_py_wrapper.data_info_list.frompointer(rmt_py_wrapper.rmt_server_get_info(id_list, dev_num, config_key_str, info_num_ptr))
     info_num = rmt_py_wrapper.intptr_value(info_num_ptr)
     rmt_py_wrapper.delete_intptr(info_num_ptr) # release info_num_ptr
-    
+
     # print("=== get config result ===")
     config_data = {}
     for i in range(0, info_num):
@@ -115,6 +115,9 @@ def rmt_set_same_config_by_id(target_list, target_num, config_dict):
     # result = json.dumps(config_data, indent=4)
     # print(result)
 
+    # Free info_list
+    rmt_py_wrapper.rmt_server_free_info(info_list.cast())
+
     return config_data
 
 def rmt_set_diff_config_by_id(device_config_json):
@@ -161,10 +164,13 @@ def rmt_set_diff_config_by_id(device_config_json):
                 value = key_value_pair[1]
                 device_dict[key] = value
         config_data[device_id] = device_dict
-        
-    # DEBUG 
+
+    # DEBUG
     # result = json.dumps(config_data, indent=4)
     # print(result)
+
+    # Free info_list
+    rmt_py_wrapper.rmt_server_free_info(info_list.cast())
 
     return config_data
 
@@ -218,9 +224,12 @@ def rmt_set_seq_config_by_id(device_list, config_dict):
                 device_dict[key] = value
         config_data[device_id] = device_dict
 
-    # DEBUG 
+    # DEBUG
     # result = json.dumps(config_data, indent=4)
     # print(result)
+
+    # Free info_list
+    rmt_py_wrapper.rmt_server_free_info(info_list.cast())
 
     return config_data
 
@@ -239,8 +248,10 @@ def get_config_for_all(config_req_body: schemas.GetConfigForAll_ReqBody) -> Any:
     if data:
         # found => 200 OK
         code = 20000
-    # TODO: free dev_list
-    # rmt_py_wrapper.rmt_server_free_device_list(dev_list)
+
+    # Free dev_list
+    rmt_py_wrapper.rmt_server_free_device_list(dev_list.cast())
+
     return {"code": code, "data": data}
 
 @router.post("/get_same_config_by_id", response_model=schemas.Response, summary="Get the config settings of input devices")

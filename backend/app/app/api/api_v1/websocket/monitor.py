@@ -120,12 +120,15 @@ class ServerNamespace(socketio.AsyncNamespace):
                                 dict_data[key] = int(value)
                             else:
                                 dict_data[key] = value
-            items.append(dict_data)                 
+            items.append(dict_data)
 
         data["items"] = items
 
         # DEBUG
         # result = json.dumps(data, indent=4)
         # print(result)
+
+        # Free dev_list
+        rmt_py_wrapper.rmt_server_free_device_list(dev_list.cast())
 
         return data

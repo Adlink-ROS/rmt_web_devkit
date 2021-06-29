@@ -37,11 +37,10 @@ def rmt_discovery():
     # result = json.dumps(data, indent=4)
     # print(result)
 
-    # TODO: free dev_list
-    # rmt_py_wrapper.rmt_server_free_device_list(dev_list)
+    # Free dev_list
+    rmt_py_wrapper.rmt_server_free_device_list(dev_list.cast())
 
     return data
-
 
 @router.get("/discovery", response_model=schemas.Response, summary="Show current online devices")
 def get_robots_list() -> Any:
