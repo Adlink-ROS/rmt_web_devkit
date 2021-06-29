@@ -101,7 +101,7 @@
 </template>
 
 <script>
-import { type_all, listData, getData, delData, addData, updateData } from '@/api/system/dict/data'
+import { typeAll, listData, getData, delData, addData, updateData } from '@/api/system/dict/data'
 import { getType } from '@/api/system/dict/type'
 
 export default {
@@ -130,10 +130,10 @@ export default {
       typeOptions: [],
       // 查询参数
       queryParams: {
-        page: 1,
-        limit: 10,
-        type_id: undefined,
-        label: undefined
+        'page': 1,
+        'limit': 10,
+        'type_id': undefined,
+        'label': undefined
       },
       // 表单参数
       form: {},
@@ -157,14 +157,14 @@ export default {
     /** 查询字典类型详细 */
     getType(dictId) {
       getType(dictId).then(response => {
-        this.queryParams.type_id = response.data.id
+        this.queryParams['type_id'] = response['data.id']
         this.defaultDictTypeId = response.data.id
         this.getList()
       })
     },
     /** 查询字典类型列表 */
     getTypeList() {
-      type_all().then(response => {
+      typeAll().then(response => {
         this.typeOptions = response.data
       })
     },
@@ -200,10 +200,10 @@ export default {
     /** 重置按钮操作 */
     resetQuery() {
       this.queryParams = {
-        page: 1,
-        limit: 10,
-        type_id: this.defaultDictTypeId,
-        label: undefined
+        'page': 1,
+        'limit': 10,
+        'type_id': this.defaultDictTypeId,
+        'label': undefined
       }
       this.handleQuery()
     },
@@ -212,7 +212,7 @@ export default {
       this.reset()
       this.open = true
       this.title = '添加字典数据'
-      this.form.type_id = this.queryParams.type_id
+      this.form['type_id'] = this.queryParams['type_id']
     },
     // 多选框选中数据
     handleSelectionChange(selection) {

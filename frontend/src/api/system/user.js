@@ -106,9 +106,9 @@ export function uploadAvatar(data) {
 }
 
 // 下载用户导入模板
-export function importTemplate(excel_name) {
+export function importTemplate(excelName) {
   return request({
-    url: '/report/template/' + excel_name,
+    url: '/report/template/' + excelName,
     method: 'get'
   })
 }

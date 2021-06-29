@@ -126,13 +126,13 @@ export default {
       form: {},
       // 表单校验
       rules: {
-        parent_id: [
+        'parent_id': [
           { required: true, message: '上级部门不能为空', trigger: 'blur' }
         ],
-        code: [
+        'code': [
           { required: true, message: '部门名称不能为空', trigger: 'blur' }
         ],
-        order: [
+        'order': [
           { required: true, message: '部门顺序不能为空', trigger: 'blur' }
         ]
       }
@@ -169,11 +169,11 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        id: undefined,
-        parent_id: undefined,
-        name: undefined,
-        order: undefined,
-        status: '0'
+        'id': undefined,
+        'parent_id': undefined,
+        'name': undefined,
+        'order': undefined,
+        'status': '0'
       }
       this.resetForm('form')
     },
@@ -185,7 +185,7 @@ export default {
     handleAdd(row) {
       this.reset()
       if (row !== undefined) {
-        this.form.parent_id = row.id
+        this.form['parent_id'] = row.id
       }
       this.open = true
       this.title = '添加部门'
