@@ -85,18 +85,18 @@ cd $HOME/rmt_web_devkit/packages
 * Start/Stop the web server
 
 ```bash
-cd $HOME/rmt_web_devkit/packages
 # start
-./rmt_server.sh start
+rmt-server start
 # stop
-./rmt_server.sh stop
+rmt-server stop
+# show status
+rmt-server status
 ```
 
 * Uninstall the web server
 
 ```bash
-cd $HOME/rmt_web_devkit/packages
-./uninstall.sh
+rmt-server uninstall
 ```
 
 # Development notes

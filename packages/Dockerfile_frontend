@@ -1,5 +1,6 @@
 FROM ubuntu:focal
 MAINTAINER ChenYing Kuo <chenying.kuo@adlinktech.com>
+ARG RMT_VER
 
 # Install the necessary tools
 RUN apt-get -qq update
@@ -11,7 +12,7 @@ RUN apt-get -qqy install nodejs
 
 # Install RMT
 RUN cd /root/ && \
-    git clone https://github.com/Adlink-ROS/rmt_web_devkit
+    git clone -b ${RMT_VER} --single-branch --depth 1 https://github.com/Adlink-ROS/rmt_web_devkit
 RUN cd /root/rmt_web_devkit/frontend && \
     npm install
 

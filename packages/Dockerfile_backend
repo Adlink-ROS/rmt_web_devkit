@@ -1,6 +1,7 @@
 # This dockerfile aims to build the RMT-FastAPI development environment on Ubuntu 20.04
 FROM ubuntu:focal
 MAINTAINER Ting Chang <ting.chang@adlinktech.com>
+ARG RMT_VER
 
 # Install the necessary tools
 RUN apt-get -qq update
@@ -15,7 +16,7 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-
 
 # Download source codes and remove frontend files
 RUN cd /root/ && \
-    git clone https://github.com/Adlink-ROS/rmt_web_devkit && \
+    git clone -b ${RMT_VER} --single-branch --depth 1 https://github.com/Adlink-ROS/rmt_web_devkit && \
     rm -rf rmt_web_devkit/frontend
 
 # Install RMT lib from deb file
