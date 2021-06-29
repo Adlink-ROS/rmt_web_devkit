@@ -15,6 +15,14 @@ export function setConfigDiff(data) {
   })
 }
 
+export function setConfigSequential(data) {
+  return request({
+    url: '/robots/set_sequential_config_by_id',
+    method: 'put',
+    data
+  })
+}
+
 export function setConfigSame(data) {
   return request({
     url: '/robots/set_same_config_by_id',

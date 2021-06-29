@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-export function type_all() {
+export function typeAll() {
   return request({
     url: '/system/dict/type/all',
     method: 'get'

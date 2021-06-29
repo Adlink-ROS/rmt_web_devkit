@@ -5,13 +5,9 @@
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList()">
         Search
       </el-button>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-refresh" style="width: 110px" @click="list=[]">
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-refresh" style="width: 110px" @click="deviceList=[]">
         Clear
       </el-button>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload()">
-        Export
-      </el-button>
-      <upload-excel-component class="filter-item" style="margin-left:9px; margin-right:9px;" :on-success="handleSuccess" :before-upload="beforeUpload" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-location-outline" @click="dialogShowWifi(true)">
         WiFi mode
       </el-button>
@@ -25,7 +21,7 @@
       :key="tableKey"
       v-loading="listLoading"
       :default-sort="{prop: 'DeviceID', order: 'ascending'}"
-      :data="list"
+      :data="deviceList"
       stripe
       fit
       highlight-current-row
@@ -59,11 +55,6 @@
           <span>{{ row.MAC }}</span>
         </template>
       </el-table-column>
-      <!-- <el-table-column label="RMT version" width="110px" align="center">
-        <template #default="{row}">
-          <span>{{ row.RMT_VERSION }}</span>
-        </template>
-      </el-table-column> -->
       <el-table-column label="Actions" align="center" width="150" class-name="small-padding fixed-width">
         <template #default="{row}">
           <el-button v-waves type="info" size="mini" @click="handleUpdate(row)">
@@ -90,29 +81,6 @@
 
     <pagination v-show="total>0" :total="total" :page.sync="pageSetting.page" :limit.sync="pageSetting.limit" @pagination="getList" />
 
-    <el-dialog title="Export Excel" :visible.sync="downloadLoading">
-      <el-form ref="dataForm" label-position="left" label-width="80px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="File name">
-          <el-input v-model="filename" />
-        </el-form-item>
-      </el-form>
-      <template>
-        <el-checkbox v-model="checkAll" :indeterminate="isIndeterminate" @change="handleCheckAllChange">Check all</el-checkbox>
-        <div style="margin: 15px 0;" />
-        <el-checkbox-group v-model="checkedParams" @change="handleCheckedParamChange">
-          <el-checkbox v-for="param in ParamOption" :key="param" :label="param">{{ param }}</el-checkbox>
-        </el-checkbox-group>
-      </template>
-      <div slot="footer" class="dialog-footer">
-        <el-button v-waves @click="downloadLoading = false">
-          Cancel
-        </el-button>
-        <el-button v-waves type="primary" @click="handleConfirm">
-          Confirm
-        </el-button>
-      </div>
-    </el-dialog>
-
     <el-dialog :visible.sync="editPanelSwitch">
       <el-tabs :value="defaultTabName">
         <el-tab-pane label="General" name="Config">General Settings
@@ -122,17 +90,53 @@
             </el-form-item>
           </el-form>
         </el-tab-pane>
-        <el-tab-pane label="WiFi" name="WiFi">RMT WiFi Client Configuration Settings
-          <el-form ref="dataForm" :model="tempWifi" label-position="left" label-width="90px" style="width: 400px; margin-left:50px; margin-top:20px">
+        <el-tab-pane v-if="temp.wifi" label="WiFi" name="WiFi">RMT WiFi Client Configuration Settings
+          <el-form ref="dataForm" :model="temp" label-position="left" label-width="90px" style="width: 400px; margin-left:50px; margin-top:20px">
             <el-form-item>
               <el-checkbox v-model="sameAsAP" border @change="wifiToAp">Same as AP Server</el-checkbox>
             </el-form-item>
             <el-form-item label="SSID">
-              <el-input v-model="tempWifi.ssid" maxlength="32" show-word-limit @input="wifiDiff" />
+              <el-input v-model="temp.wifi.ssid" maxlength="32" show-word-limit @input="wifiDiff" />
             </el-form-item>
             <el-form-item label="Password">
-              <el-input v-model="tempWifi.password" show-password minlength="8" maxlength="32" @input="wifiDiff" />
+              <el-input v-model="temp.wifi.password" show-password minlength="8" maxlength="32" @input="wifiDiff" />
             </el-form-item>
+          </el-form>
+        </el-tab-pane>
+        <el-tab-pane v-if="temp.ipAddress" label="IPv4" name="IPv4">IPv4 Address
+          <el-form label-position="left" label-width="90px" style="width: 90%; margin-left:50px; margin-top:20px">
+            <el-row type="flex" align="middle" :gutter="20" style="font-size:16px;">
+              <el-col :span="8">
+                <el-select v-model="interfaceName" style="width:90%">
+                  <el-option
+                    v-for="item in Object.keys(temp.ipAddress)"
+                    :key="item"
+                    :label="item"
+                    :value="item"
+                  />
+                </el-select>
+              </el-col>
+              <el-col :span="15"><span>Interface Type: {{ deviceTypeFilter(temp.ipAddress[interfaceName].deviceType) }}</span></el-col>
+            </el-row>
+            <el-row style="margin-top:20px">
+              <el-radio v-model="temp.ipAddress[interfaceName].ipMethod" label="auto">Automatic (DHCP)</el-radio>
+              <el-radio v-model="temp.ipAddress[interfaceName].ipMethod" label="manual">Manual</el-radio>
+            </el-row>
+            <div v-for="(ipArray, key) in temp.ipAddress[interfaceName].ipArray" :key="key">
+              <el-row class="ip-header">
+                <el-col :span="5"><span>{{ key }}</span></el-col>
+              </el-row>
+              <el-row>
+                <el-input
+                  v-for="(segment, index) in ipArray"
+                  :key="index"
+                  v-model="ipArray[index]"
+                  maxlength="3"
+                  :disabled="temp.ipAddress[interfaceName].ipMethod=='auto'"
+                  style="width: 12%"
+                />
+              </el-row>
+            </div>
           </el-form>
         </el-tab-pane>
       </el-tabs>
@@ -159,147 +163,107 @@
       @syncData="syncWifi"
     />
     <bulk-edit-component
+      ref="bulkEdit"
       :dialog-show="bulkPanelSwitch"
       :device-list="multipleSelection"
       :temp-wifi="tempWifi"
       @dialogShowChange="dialogShowGroup"
-      @syncData="syncGroupEdit"
     />
   </div>
 </template>
 
 <script>
 import { fetchRobotList, setConfigDiff, getConfigAll, fetchWifi } from '@/api/robots'
+import agentItem from './mixins/agent'
 import waves from '@/directive/waves' // waves directive
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-import UploadExcelComponent from '@/components/UploadExcel/index_robot.vue'
-import ControlComponent from '@/components/ControlPanel/index.vue'
-import WifiModeComponent from '@/components/WiFiMode/index.vue'
-import BulkEditComponent from '@/components/BulkEdit/index.vue'
+import ControlComponent from './components/ControlPanel'
+import WifiModeComponent from './components/WiFiMode'
+import BulkEditComponent from './components/BulkEdit'
 
 export default {
   name: 'ComplexTable',
-  components: { Pagination, UploadExcelComponent, ControlComponent, WifiModeComponent, BulkEditComponent },
+  components: { Pagination, ControlComponent, WifiModeComponent, BulkEditComponent },
   directives: { waves },
+  mixins: [agentItem],
   data() {
     return {
       tableKey: 0,
-      list: [],
+      deviceList: [],
       total: 0,
       multipleSelection: [],
-      downloadLoading: false,
-      checkAll: false,
       sameAsAP: false,
-      filename: '',
-      ParamOption: [],
-      checkedParams: [],
-      isIndeterminate: true,
       listLoading: true,
       waitRequest: false,
       pageSetting: {
         page: 1,
         limit: 20
       },
-      wifiSet: {
-        'ssid': '',
-        'password': '',
-        'band': '2.4 GHz',
-        'hotspot_enable': false
-      },
-      wifiClientList: {},
-      tempWifi: {
-        ssid: '',
-        password: ''
-      },
-      temp: {
-        index: undefined
-      },
+      wifiSet: {},
+      tempWifi: {},
+      temp: {},
       locateList: [],
       bulkPanelSwitch: false,
       editPanelSwitch: false,
       controlPanelSwitch: false,
       wifiPanelSwitch: false,
-      defaultTabName: 'Config'
+      defaultTabName: 'Config',
+      interfaceName: ''
     }
   },
   created() {
     fetchWifi().then(response => {
       this.wifiSet = response.data
-    }).then(this.getList())
+    })
+      .then(this.getList())
   },
   methods: {
     getList() {
       this.listLoading = true
-      var config = { 'config_list': ['wifi', 'task_list', 'task_mode'] }
-      fetchRobotList().then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
-        this.locateList = Array(this.total).fill('off')
-      }).then(() => getConfigAll(config)).then(response => {
-        Object.keys(response.data).forEach((element) => {
-          var splitWifiString = response.data[element].wifi.split(' ')
-          if (splitWifiString.length === 4) {
-            this.wifiClientList[element] = { 'ssid': splitWifiString[1], 'password': splitWifiString[3] }
-          } else {
-            this.$message({
-              message: 'Agent WiFi Client Got Error',
-              type: 'warning'
-            })
-          }
-          var splitTaskString = response.data[element].task_list.split(' ')
-          var listIndex = this.list.findIndex(agent => agent.DeviceID === element)
-          this.list[listIndex]['task_list'] = splitTaskString
-          this.list[listIndex]['current_task'] = response.data[element].task_mode
+      var config = { 'config_list': ['ip_address', 'task_list', 'task_mode', 'wifi'] }
+
+      fetchRobotList()
+        .then(response => {
+          this.deviceList = response.data.items
+          this.total = response.data.total
+          this.locateList = Array(this.total).fill('off')
         })
-        this.listLoading = false
-      })
+        .then(() => getConfigAll(config))
+        .then(response => {
+          for (const [agentID, configItem] of Object.entries(response.data)) {
+            var listIndex = this.deviceList.findIndex(agent => agent.DeviceID === agentID)
+            var splitWifiString = configItem.wifi.split(' ')
+            this.deviceList[listIndex]['ipAddress'] = {}
+            configItem['ip_address']
+              .split('#')
+              .forEach((element) => {
+                var tempSplit = element.split(' ')
+                this.interfaceName = tempSplit[0]
+                this.deviceList[listIndex]['ipAddress'][tempSplit[0]] = {
+                  deviceType: tempSplit[1],
+                  ipMethod: tempSplit[2],
+                  ipArray: this.emptyAddress
+                }
+                if (tempSplit[2] === 'manual') {
+                  this.deviceList[listIndex]['ipAddress'][tempSplit[0]]['ipArray'] = {
+                    'IP Address': tempSplit[3].split('.'),
+                    'Subnet Mask': this.cidrToSubnet(tempSplit[4]),
+                    'Gateway': (tempSplit.length > 5) ? tempSplit[5].split('.') : Array(4).fill('')
+                  }
+                }
+              })
+            var splitTaskString = configItem.task_list.split(' ')
+            this.deviceList[listIndex]['wifi'] = { 'ssid': splitWifiString[1], 'password': splitWifiString[3] }
+            this.deviceList[listIndex]['task_list'] = splitTaskString
+            this.deviceList[listIndex]['current_task'] = configItem.task_mode
+          }
+          this.listLoading = false
+        })
     },
 
     // Handle agents selection in table
     handleSelectionChange(val) {
       this.multipleSelection = val
-    },
-
-    // Handle parameter checkbox
-    handleCheckAllChange(val) {
-      this.checkedParams = val ? this.ParamOption : []
-      this.isIndeterminate = false
-    },
-    handleCheckedParamChange(value) {
-      const checkedCount = value.length
-      this.checkAll = checkedCount === this.ParamOption.length
-      this.isIndeterminate = checkedCount > 0 && checkedCount < this.ParamOption.length
-    },
-
-    // Function for downloading configuration as excel file
-    handleDownload() {
-      if (this.multipleSelection.length) {
-        this.ParamOption = Object.keys(this.list[0])
-        this.downloadLoading = true
-      } else {
-        this.$message({
-          message: 'Please select at least one item',
-          type: 'warning'
-        })
-      }
-    },
-    formatJson(filterVal, jsonData) {
-      return jsonData.map(v => filterVal.map(j => v[j]))
-    },
-    handleConfirm() {
-      import('@/vendor/Export2Excel').then(excel => {
-        const filterVal = this.checkedParams
-        const tHeader = filterVal
-        const list = this.multipleSelection
-        const data = this.formatJson(filterVal, list)
-        excel.export_json_to_excel({
-          header: tHeader,
-          data,
-          filename: this.filename
-        })
-        this.$refs.multipleTable.clearSelection()
-        this.downloadLoading = false
-      })
     },
 
     // Function for control component
@@ -327,31 +291,23 @@ export default {
     dialogShowGroup(val) {
       if (val) {
         this.tempWifi = { 'ssid': this.wifiSet.ssid, 'password': this.wifiSet.password }
+        this.$refs.bulkEdit.updateDevice()
       } else {
         this.$refs.multipleTable.clearSelection()
+        this.$refs.bulkEdit.clearConfig()
       }
       this.bulkPanelSwitch = val
-    },
-    syncGroupEdit() {
-      this.multipleSelection.forEach(element => {
-        this.wifiClientList[element.DeviceID] = Object.assign({}, this.tempWifi)
-      })
     },
 
     // Send request for config edit panel and update table
     wifiToAp(val) {
-      if (val) {
-        this.tempWifi = Object.assign({}, this.wifiSet)
-      } else {
-        this.tempWifi = Object.assign({}, this.wifiClientList[this.temp.DeviceID])
-      }
+      if (val) this.temp.wifi = Object.assign({}, this.wifiSet)
     },
     wifiDiff() {
       this.sameAsAP = false
     },
     handleUpdate(row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.tempWifi = Object.assign({}, this.wifiClientList[this.temp.DeviceID])
+      this.temp = JSON.parse(JSON.stringify(row))
       this.sameAsAP = false
       this.editPanelSwitch = true
       this.$nextTick(() => {
@@ -363,52 +319,42 @@ export default {
         if (valid) {
           this.waitRequest = true
           var tempData = { 'device_config_json': { [this.temp.DeviceID]: {}}}
-          var wifiClientConfig = `${this.tempWifi.ssid} ${this.tempWifi.password}`
-          tempData['device_config_json'][this.temp.DeviceID]['hostname'] = this.temp.Hostname
-          tempData['device_config_json'][this.temp.DeviceID]['wifi'] = wifiClientConfig
-          setConfigDiff(tempData).then(() => {
-            const index = this.list.findIndex(v => v.DeviceID === this.temp.DeviceID)
-            this.list.splice(index, 1, this.temp)
-            this.wifiClientList[this.temp.DeviceID] = Object.assign({}, this.tempWifi)
+          var configAddress
+
+          if (this.temp.ipAddress[this.interfaceName].ipMethod === 'manual') {
+            const prefix = this.checkIpProperty(this.temp.ipAddress[this.interfaceName].ipArray)
+
+            if (!prefix) {
+              this.$message({
+                message: 'Invalid value of IPv4 Address',
+                type: 'warning'
+              })
+              this.waitRequest = false
+              return
+            }
+
+            configAddress = `${this.interfaceName} manual ${this.temp.ipAddress[this.interfaceName].ipArray['IP Address'].join('.')} ${prefix}`
+
+            if (!this.temp.ipAddress[this.interfaceName].ipArray['Gateway'].every((element) => element === '') && this.checkIpAddress(this.temp.ipAddress[this.interfaceName].ipArray, 'Gateway')) {
+              configAddress = configAddress + ' ' + this.temp.ipAddress[this.interfaceName].ipArray['Gateway'].join('.')
+            }
+          } else { configAddress = `${this.interfaceName} auto` }
+
+          tempData['device_config_json'][this.temp.DeviceID] = {
+            'hostname': this.temp.Hostname,
+            'wifi': `${this.temp.wifi.ssid} ${this.temp.wifi.password}`,
+            'ip_address': configAddress
+          }
+          setConfigDiff(tempData).then(response => {
+            if (this.responseVarify(response)) {
+              const index = this.deviceList.findIndex(v => v.DeviceID === this.temp.DeviceID)
+              this.deviceList.splice(index, 1, this.temp)
+              this.editPanelSwitch = false
+            }
+
             this.waitRequest = false
-            this.editPanelSwitch = false
-            this.$notify({
-              title: 'Success',
-              message: 'Update Successfully',
-              type: 'success',
-              duration: 2000
-            })
           })
         }
-      })
-    },
-
-    // File check for import excel and update table
-    beforeUpload(file) {
-      const isLt1M = file.size / 1024 / 1024 < 1
-      if (isLt1M) {
-        return true
-      }
-      this.$message({
-        message: 'Please do not upload files larger than 1m in size.',
-        type: 'warning'
-      })
-      return false
-    },
-    handleSuccess({ results, header }) {
-      this.listLoading = true
-      var tempData = { 'device_config_json': {}}
-      results.forEach((element) => {
-        tempData['device_config_json'] = { [element['DeviceID']]: { 'hostname': element['Hostname'] }}
-        var listIndex = this.list.findIndex(agent => agent.DeviceID === element['DeviceID'])
-        this.list[listIndex]['Hostname'] = element['Hostname']
-      })
-      setConfigDiff(tempData).then(() => {
-        this.listLoading = false
-        this.$message({
-          message: 'Configuration import success',
-          type: 'success'
-        })
       })
     },
 
@@ -426,8 +372,27 @@ export default {
           })
         })
       }
+    },
+
+    cidrToSubnet(bitCount) {
+      var mask = []
+      var n
+      for (var i = 0; i < 4; i++) {
+        n = Math.min(bitCount, 8)
+        mask.push(String(256 - Math.pow(2, 8 - n)))
+        bitCount -= n
+      }
+      return mask
+    },
+    deviceTypeFilter(name) {
+      if (name === 'wifi') {
+        return 'WiFi'
+      } else if (name === 'ethernet') {
+        return 'Ethernet'
+      } else {
+        return name
+      }
     }
   }
 }
 </script>
-

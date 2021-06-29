@@ -320,19 +320,19 @@ export default {
       },
       // 表单校验
       rules: {
-        username: [
+        'username': [
           { required: true, message: '用户编号不能为空', trigger: 'blur' }
         ],
-        nickname: [
+        'nickname': [
           { required: true, message: '用户名称不能为空', trigger: 'blur' }
         ],
-        deptId: [
+        'deptId': [
           { required: true, message: '归属部门不能为空', trigger: 'blur' }
         ],
-        identity_card: [
+        'identity_card': [
           { required: true, message: '身份证不能为空', trigger: 'blur' }
         ],
-        phone: [
+        'phone': [
           { required: true, message: '手机号码不能为空', trigger: 'blur' },
           {
             pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/,
@@ -340,14 +340,14 @@ export default {
             trigger: 'blur'
           }
         ],
-        sex: [
+        'sex': [
           { required: true, message: '性别不能为空', trigger: 'blur' }
         ],
-        status: [
+        'status': [
           { required: true, message: '状态不能为空', trigger: 'blur' }
         ]
       },
-      excel_name: 'system_user'
+      'excel_name': 'system_user'
     }
   },
   watch: {
@@ -440,7 +440,7 @@ export default {
       }
       this.resetForm('form')
     },
-    reset_query() {
+    resetQueryParams() {
       this.queryParams = {
         page: 1,
         limit: 10,
@@ -457,7 +457,7 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.reset_query()
+      this.resetQueryParams()
       this.handleQuery()
     },
     // 多选框选中数据

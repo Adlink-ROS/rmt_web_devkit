@@ -199,17 +199,17 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        id: undefined,
-        path: undefined,
-        component: undefined,
-        name: undefined,
-        title: undefined,
-        affix: undefined,
-        icon: undefined,
-        no_cache: undefined,
-        order: undefined,
-        external_link: false,
-        parent_id: undefined
+        'id': undefined,
+        'path': undefined,
+        'component': undefined,
+        'name': undefined,
+        'title': undefined,
+        'affix': undefined,
+        'icon': undefined,
+        'no_cache': undefined,
+        'order': undefined,
+        'external_link': false,
+        'parent_id': undefined
 
       }
       this.resetForm('form')
@@ -223,7 +223,7 @@ export default {
       this.reset()
       this.getTreeselect()
       if (row !== null) {
-        this.form.parent_id = row.id
+        this.form['parent_id'] = row.id
       }
       this.open = true
       this.title = '添加菜单'
