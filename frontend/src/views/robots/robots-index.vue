@@ -5,13 +5,9 @@
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList()">
         Search
       </el-button>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-refresh" style="width: 110px" @click="list=[]">
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-refresh" style="width: 110px" @click="deviceList=[]">
         Clear
       </el-button>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload()">
-        Export
-      </el-button>
-      <upload-excel-component class="filter-item" style="margin-left:9px; margin-right:9px;" :on-success="handleSuccess" :before-upload="beforeUpload" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-location-outline" @click="dialogShowWifi(true)">
         WiFi mode
       </el-button>
@@ -59,11 +55,6 @@
           <span>{{ row.MAC }}</span>
         </template>
       </el-table-column>
-      <!-- <el-table-column label="RMT version" width="110px" align="center">
-        <template #default="{row}">
-          <span>{{ row.RMT_VERSION }}</span>
-        </template>
-      </el-table-column> -->
       <el-table-column label="Actions" align="center" width="150" class-name="small-padding fixed-width">
         <template #default="{row}">
           <el-button v-waves type="info" size="mini" @click="handleUpdate(row)">
@@ -89,29 +80,6 @@
     </el-table>
 
     <pagination v-show="total>0" :total="total" :page.sync="pageSetting.page" :limit.sync="pageSetting.limit" @pagination="getList" />
-
-    <el-dialog title="Export Excel" :visible.sync="downloadLoading">
-      <el-form ref="dataForm" label-position="left" label-width="80px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="File name">
-          <el-input v-model="filename" />
-        </el-form-item>
-      </el-form>
-      <template>
-        <el-checkbox v-model="checkAll" :indeterminate="isIndeterminate" @change="handleCheckAllChange">Check all</el-checkbox>
-        <div style="margin: 15px 0;" />
-        <el-checkbox-group v-model="checkedParams" @change="handleCheckedParamChange">
-          <el-checkbox v-for="param in ParamOption" :key="param" :label="param">{{ param }}</el-checkbox>
-        </el-checkbox-group>
-      </template>
-      <div slot="footer" class="dialog-footer">
-        <el-button v-waves @click="downloadLoading = false">
-          Cancel
-        </el-button>
-        <el-button v-waves type="primary" @click="handleConfirm">
-          Confirm
-        </el-button>
-      </div>
-    </el-dialog>
 
     <el-dialog :visible.sync="editPanelSwitch">
       <el-tabs :value="defaultTabName">
@@ -298,48 +266,6 @@ export default {
       this.multipleSelection = val
     },
 
-    // Handle parameter checkbox
-    handleCheckAllChange(val) {
-      this.checkedParams = val ? this.ParamOption : []
-      this.isIndeterminate = false
-    },
-    handleCheckedParamChange(value) {
-      const checkedCount = value.length
-      this.checkAll = checkedCount === this.ParamOption.length
-      this.isIndeterminate = checkedCount > 0 && checkedCount < this.ParamOption.length
-    },
-
-    // Function for downloading configuration as excel file
-    handleDownload() {
-      if (this.multipleSelection.length) {
-        this.ParamOption = Object.keys(this.list[0])
-        this.downloadLoading = true
-      } else {
-        this.$message({
-          message: 'Please select at least one item',
-          type: 'warning'
-        })
-      }
-    },
-    formatJson(filterVal, jsonData) {
-      return jsonData.map(v => filterVal.map(j => v[j]))
-    },
-    handleConfirm() {
-      import('@/vendor/Export2Excel').then(excel => {
-        const filterVal = this.checkedParams
-        const tHeader = filterVal
-        const list = this.multipleSelection
-        const data = this.formatJson(filterVal, list)
-        excel.export_json_to_excel({
-          header: tHeader,
-          data,
-          filename: this.filename
-        })
-        this.$refs.multipleTable.clearSelection()
-        this.downloadLoading = false
-      })
-    },
-
     // Function for control component
     handlecontrol(row) {
       this.temp = Object.assign({}, row) // copy obj
@@ -429,35 +355,6 @@ export default {
             this.waitRequest = false
           })
         }
-      })
-    },
-
-    // File check for import excel and update table
-    beforeUpload(file) {
-      const isLt1M = file.size / 1024 / 1024 < 1
-      if (isLt1M) {
-        return true
-      }
-      this.$message({
-        message: 'Please do not upload files larger than 1m in size.',
-        type: 'warning'
-      })
-      return false
-    },
-    handleSuccess({ results, header }) {
-      this.listLoading = true
-      var tempData = { 'device_config_json': {}}
-      results.forEach((element) => {
-        tempData['device_config_json'] = { [element['DeviceID']]: { 'hostname': element['Hostname'] }}
-        var listIndex = this.list.findIndex(agent => agent.DeviceID === element['DeviceID'])
-        this.list[listIndex]['Hostname'] = element['Hostname']
-      })
-      setConfigDiff(tempData).then(() => {
-        this.listLoading = false
-        this.$message({
-          message: 'Configuration import success',
-          type: 'success'
-        })
       })
     },
 
