@@ -22,11 +22,9 @@
             </el-button>
           </el-tooltip>
         </el-row>
-        <el-tooltip effect="dark" content="WARN!! Reboot ROScube">
-          <el-button type="danger" style="width: 120px; margin-top:50px" @click="Reboot()">
-            Reboot
-          </el-button>
-        </el-tooltip>
+        <el-row style="margin-top:20px">
+          <span> This function is only workable if the device has LED.</span>
+        </el-row>
       </el-form>
 
       <div slot="footer" class="dialog-footer">
@@ -72,13 +70,6 @@ export default {
   methods: {
     closeDialog() {
       this.$emit('dialogShowChange', false)
-    },
-    Reboot() {
-      this.$message({
-        message: 'ROScube start reboot',
-        type: 'warning'
-      })
-      this.locateSwitch = this.locate
     },
     handleLocate() {
       var tempData = { 'device_config_json': { [this.config.DeviceID]: { 'locate': this.locateSwitch }}}
