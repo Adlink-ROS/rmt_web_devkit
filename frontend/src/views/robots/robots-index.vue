@@ -333,7 +333,7 @@ export default {
               return
             }
 
-            configAddress = `manual ${this.temp.ipAddress[this.interfaceName].ipArray['IP Address'].join('.')} ${prefix}`
+            configAddress = `${this.interfaceName} manual ${this.temp.ipAddress[this.interfaceName].ipArray['IP Address'].join('.')} ${prefix}`
 
             if (!this.temp.ipAddress[this.interfaceName].ipArray['Gateway'].every((element) => element === '') && this.checkIpAddress(this.temp.ipAddress[this.interfaceName].ipArray, 'Gateway')) {
               configAddress = configAddress + ' ' + this.temp.ipAddress[this.interfaceName].ipArray['Gateway'].join('.')
