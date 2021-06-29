@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=`cat version.txt`
+version="vx.x.x"
 if [ "$1" = "stop" ]; then
     echo "Stop the RMT server"
     sudo docker stop -t 1 rmt-frontend-container > /dev/null
@@ -20,10 +20,22 @@ elif [ "$1" = "status" ]; then
     else
         echo "Not Running"
     fi
+elif [ "$1" = "uninstall" ]; then
+    echo -n "Do you want to uninstall the RMT server? (y/N) "
+    read answer
+    if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
+        sudo docker rmi rmt-frontend:${version}
+        sudo docker rmi rmt-backend:${version}
+        sudo rm /usr/bin/rmt-server
+    else
+        echo "Do nothing"
+    fi
 else
+    echo "RMT server CLI tool ${version}"
     echo "Usage: rmt-server [command]"
     echo "command:"
-    echo "- start:  run the server"
-    echo "- stop:   stop the server"
-    echo "- status: show the server status"
+    echo "- start:     run the server"
+    echo "- stop:      stop the server"
+    echo "- status:    show the server status"
+    echo "- uninstall: remove the server"
 fi
