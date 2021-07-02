@@ -1,0 +1,44 @@
+#!/bin/bash
+
+version="vx.x.x"
+frontend="my_frontend_name"
+backend="my_backend_name"
+if [ "$1" = "stop" ]; then
+    echo "Stop the RMT server"
+    sudo docker stop -t 1 rmt-frontend-container > /dev/null
+    sudo docker stop -t 1 rmt-backend-container > /dev/null
+elif [ "$1" = "start" ]; then
+    echo "Start the RMT server"
+    # Use port 9527
+    sudo docker run -d -p 9527:9527 --rm --name rmt-frontend-container ${frontend}:${version} > /dev/null
+    # Use port 8080
+    sudo docker run -d --privileged --volume /var/run/dbus:/var/run/dbus --network=host --rm --name rmt-backend-container ${backend}:${version} > /dev/null
+elif [ "$1" = "status" ]; then
+    sudo echo -n "RMT server status: "
+    frontend=`sudo docker ps -f status=running -f name=rmt-frontend-container --format "{{.Names}}"`
+    backend=`sudo docker ps -f status=running -f name=rmt-backend-container --format "{{.Names}}"`
+    if [ "$frontend" = "rmt-frontend-container" ] && [ "$backend" = "rmt-backend-container" ]; then
+        echo "Running"
+    else
+        echo "Not Running"
+    fi
+elif [ "$1" = "uninstall" ]; then
+    echo -n "Do you want to uninstall the RMT server? (y/N) "
+    read answer
+    if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
+        sudo docker rmi ${frontend}:${version} > /dev/null
+        sudo docker rmi ${backend}:${version} > /dev/null
+        sudo rm /usr/bin/rmt-server
+        echo "RMT server is uninstalled."
+    else
+        echo "Do nothing"
+    fi
+else
+    echo "RMT server CLI tool ${version}"
+    echo "Usage: rmt-server [command]"
+    echo "command:"
+    echo "- start:     run the server"
+    echo "- stop:      stop the server"
+    echo "- status:    show the server status"
+    echo "- uninstall: remove the server"
+fi
