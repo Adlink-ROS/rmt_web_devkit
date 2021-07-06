@@ -13,6 +13,12 @@ elif [ "$1" = "start" ]; then
     sudo docker run -d -p 9527:9527 --rm --name rmt-frontend-container ${frontend}:${version} > /dev/null
     # Use port 8080
     sudo docker run -d --privileged --volume /var/run/dbus:/var/run/dbus --network=host --rm --name rmt-backend-container ${backend}:${version} > /dev/null
+elif [ "$1" = "restart" ]; then
+    echo "Restart the RMT server"
+    sudo docker stop -t 1 rmt-frontend-container > /dev/null
+    sudo docker stop -t 1 rmt-backend-container > /dev/null
+    sudo docker run -d -p 9527:9527 --rm --name rmt-frontend-container ${frontend}:${version} > /dev/null
+    sudo docker run -d --privileged --volume /var/run/dbus:/var/run/dbus --network=host --rm --name rmt-backend-container ${backend}:${version} > /dev/null
 elif [ "$1" = "status" ]; then
     sudo echo -n "RMT server status: "
     frontend=`sudo docker ps -f status=running -f name=rmt-frontend-container --format "{{.Names}}"`
@@ -39,6 +45,7 @@ else
     echo "command:"
     echo "- start:     run the server"
     echo "- stop:      stop the server"
+    echo "- restart:   restart the server"
     echo "- status:    show the server status"
     echo "- uninstall: remove the server"
 fi
