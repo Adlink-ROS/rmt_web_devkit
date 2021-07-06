@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog :visible.sync="dialogFormVisible" width="60%" @close="closeDialog">
+    <el-dialog title="Bulk Edit Panel" :visible.sync="dialogFormVisible" width="60%" @close="closeDialog">
       <el-tabs ref="config-tabs" value="Config" @tab-click="handleSwitchTab">
         <el-tab-pane label="General" name="Config">General Settings
           <el-form label-position="left" label-width="90px" style="width: 80%; margin-left:50px; margin-top:20px">
