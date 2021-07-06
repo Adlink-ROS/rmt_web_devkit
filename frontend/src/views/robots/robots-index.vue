@@ -81,7 +81,7 @@
 
     <pagination v-show="total>0" :total="total" :page.sync="pageSetting.page" :limit.sync="pageSetting.limit" @pagination="getList" />
 
-    <el-dialog :visible.sync="editPanelSwitch">
+    <el-dialog title="Edit Configuration" :visible.sync="editPanelSwitch">
       <el-tabs :value="defaultTabName">
         <el-tab-pane label="General" name="Config">General Settings
           <el-form ref="dataForm" :model="temp" label-position="left" label-width="90px" style="width: 400px; margin-left:50px; margin-top:20px">
@@ -145,7 +145,7 @@
           Cancel
         </el-button>
         <el-button v-waves :loading="waitRequest" type="primary" @click="updateData()">
-          Confirm
+          Submit
         </el-button>
       </div>
     </el-dialog>
