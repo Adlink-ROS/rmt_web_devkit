@@ -43,6 +43,7 @@
     "url": "https://github.com/PanJiaChen/vue-element-admin/issues"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.3",
     "@riophae/vue-treeselect": "0.4.0",
     "axios": "0.18.1",
     "bufferutil": "^4.0.3",

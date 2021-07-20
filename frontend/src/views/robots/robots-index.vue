@@ -2,16 +2,17 @@
   <div class="app-container">
 
     <div class="filter-container">
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList()">
-        Search
+      <el-button v-waves class="filter-item" type="primary" @click="getList()">
+        <svg-icon icon-class="radar" style="margin-right: 5px" />
+        Scan
       </el-button>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-refresh" style="width: 110px" @click="deviceList=[]">
         Clear
       </el-button>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-location-outline" @click="dialogShowWifi(true)">
+      <el-button v-waves class="filter-item" type="primary" icon="fas el-icon-fa-wifi" @click="dialogShowWifi(true)">
         WiFi mode
       </el-button>
-      <el-button v-show="multipleSelection.length" v-waves class="filter-item" type="primary" icon="el-icon-set-up" @click="dialogShowGroup(true)">
+      <el-button v-show="multipleSelection.length" v-waves class="filter-item" type="primary" icon="fas el-icon-fa-edit" @click="dialogShowGroup(true)">
         Bulk Edit
       </el-button>
     </div>
@@ -57,12 +58,14 @@
       </el-table-column>
       <el-table-column label="Actions" align="center" width="150" class-name="small-padding fixed-width">
         <template #default="{row}">
-          <el-button v-waves type="info" size="mini" @click="handleUpdate(row)">
-            Edit
-          </el-button>
-          <el-button v-waves type="primary" size="mini" @click="handlecontrol(row)">
-            Control
-          </el-button>
+          <el-tooltip effect="light" content="Configuration setting">
+            <el-button v-waves icon="fas el-icon-fa-wrench" type="info" size="mini" @click="handleUpdate(row)" />
+          </el-tooltip>
+          <el-tooltip effect="light" content="Hardware I/O control">
+            <el-button v-waves type="primary" size="mini" @click="handlecontrol(row)">
+              Control
+            </el-button>
+          </el-tooltip>
         </template>
       </el-table-column>
       <el-table-column label="Task" align="center" width="140" class-name="small-padding fixed-width">
@@ -396,3 +399,23 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+// Import Font Awesome 5 Free
+$fa-css-prefix: 'el-icon-fa';
+$fa-font-path: '~@fortawesome/fontawesome-free/webfonts';
+
+@import '~@fortawesome/fontawesome-free/scss/fontawesome.scss';
+@import '~@fortawesome/fontawesome-free/scss/regular.scss';
+@import '~@fortawesome/fontawesome-free/scss/solid.scss';
+@import '~@fortawesome/fontawesome-free/scss/brands.scss';
+
+// Override Element UI's icon font
+.fas {
+  font-family: 'Font Awesome 5 Free' !important;
+}
+
+.fab {
+  font-family: 'Font Awesome 5 Brands' !important;
+}
+</style>
