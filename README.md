@@ -101,26 +101,6 @@ rmt-server uninstall
 
 # Development notes
 
-* Web login from another computer
+Please go to the online user manual for more development information.
 
-    To login from different host PC, you have to change `VUE_APP_BASE_API` to the server IP instead of 127.0.0.1. The parameter is located at the file `rmt_web_devkit/frontend/.env.development`.
-
-    ```bash
-    VUE_APP_BASE_API = 'http://127.0.0.1:8080'
-    ```
-
-* Username/password of FastAPI
-
-    To change the default username and password of FastAPI server, please modify below codes in the file ```backend/app/app/core/security.py```
-
-    ```py
-    fake_users_db = {
-        "ros": {
-            "username": "ros",
-            "full_name": "ros",
-            "email": "ros@example.com",
-            "hashed_password": "$2b$12$5Yy4jwGIXsbwM9NMaWloPOfKDsVE2YBH/Uqjrorl28zRY032BcRDu",
-            "disabled": False,
-        }
-    }
-    ```
+https://github.com/Adlink-ROS/RMT-User-Manual/wiki/Web-Development#web-development-notes
