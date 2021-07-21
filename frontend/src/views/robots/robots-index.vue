@@ -66,16 +66,28 @@
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column label="Task" align="center" width="140" class-name="small-padding fixed-width">
+      <el-table-column label="Task" align="center" width="160" class-name="small-padding fixed-width">
         <template #default="{row}">
-          <el-select :value="row.current_task" placeholder="Task" :loading="listLoading" style="width: 100%" @change="handleTask($event, row)">
-            <el-option
-              v-for="item in row.task_list"
-              :key="item"
-              :label="item"
-              :value="item"
-            />
-          </el-select>
+          <el-popover
+            v-model="popConfirmVisible"
+            trigger="manual"
+            placement="top"
+            width="250"
+          >
+            <p>Click confirm to switch task mode of {{ row.Hostname }} to {{ desiredTask }}</p>
+            <div style="text-align: right; margin: 0">
+              <el-button size="mini" type="text" @click="taskConfirm(false)">cancel</el-button>
+              <el-button size="mini" type="primary" @click="taskConfirm(true)">confirm</el-button>
+            </div>
+            <el-select slot="reference" :value="row.current_task" placeholder="Task" :loading="listLoading" style="width: 100%" @change="handleTask($event, row)">
+              <el-option
+                v-for="item in row.task_list"
+                :key="item"
+                :label="item"
+                :value="item"
+              />
+            </el-select>
+          </el-popover>
         </template>
       </el-table-column>
     </el-table>
@@ -199,7 +211,10 @@ export default {
       editPanelSwitch: false,
       wifiPanelSwitch: false,
       defaultTabName: 'Config',
-      interfaceName: ''
+      interfaceName: '',
+      popConfirmVisible: false,
+      taskConfirm: null,
+      desiredTask: ''
     }
   },
   created() {
@@ -340,18 +355,29 @@ export default {
 
     // Function for task mode request
     handleTask(val, row) {
-      if (confirm(`Click OK to switch task mode of ${row.Hostname} to "${val}"`)) {
-        this.listLoading = true
-        var tempData = { 'device_config_json': { [row.DeviceID]: { 'task_mode': val }}}
-        setConfigDiff(tempData).then(() => {
-          this.listLoading = false
-          row['current_task'] = val
-          this.$message({
-            message: 'Task Launch Success',
-            type: 'success'
-          })
+      this.desiredTask = val
+      this.taskDecision()
+        .then(resolve => {
+          this.taskConfirm = null
+          this.popConfirmVisible = false
+          if (resolve) {
+            this.listLoading = true
+            var tempData = { 'device_config_json': { [row.DeviceID]: { 'task_mode': val }}}
+
+            setConfigDiff(tempData).then(() => {
+              this.listLoading = false
+              row['current_task'] = val
+            })
+          }
         })
-      }
+      this.$forceUpdate()
+    },
+    taskDecision() {
+      this.popConfirmVisible = true
+      const _this = this
+      return new Promise(function(resolve, reject) {
+        _this.taskConfirm = resolve
+      })
     },
 
     cidrToSubnet(bitCount) {
