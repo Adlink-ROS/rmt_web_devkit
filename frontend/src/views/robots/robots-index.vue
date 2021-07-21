@@ -61,10 +61,8 @@
           <el-tooltip effect="light" content="Configuration setting">
             <el-button v-waves icon="fas el-icon-fa-wrench" type="info" size="mini" @click="handleUpdate(row)" />
           </el-tooltip>
-          <el-tooltip effect="light" content="Hardware I/O control">
-            <el-button v-waves type="primary" size="mini" @click="handlecontrol(row)">
-              Control
-            </el-button>
+          <el-tooltip effect="light" content="Flashing LED on agent device">
+            <el-button v-waves :loading="waitRequest || listLoading" icon="fas el-icon-fa-lightbulb" :type="buttonTypeFilter(row.locate)" size="mini" @click="handleLocate(row)" />
           </el-tooltip>
         </template>
       </el-table-column>
@@ -152,13 +150,6 @@
         </el-button>
       </div>
     </el-dialog>
-    <control-component
-      :dialog-show="controlPanelSwitch"
-      :config="temp"
-      :locate="locateList[temp.Index-1]"
-      @dialogShowChange="dialogShowControl"
-      @syncData="syncLocate"
-    />
     <wifi-mode-component
       :dialog-show="wifiPanelSwitch"
       :wifi-set="tempWifi"
@@ -180,13 +171,12 @@ import { fetchRobotList, setConfigDiff, getConfigAll, fetchWifi } from '@/api/ro
 import agentItem from './mixins/agent'
 import waves from '@/directive/waves' // waves directive
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-import ControlComponent from './components/ControlPanel'
 import WifiModeComponent from './components/WiFiMode'
 import BulkEditComponent from './components/BulkEdit'
 
 export default {
   name: 'ComplexTable',
-  components: { Pagination, ControlComponent, WifiModeComponent, BulkEditComponent },
+  components: { Pagination, WifiModeComponent, BulkEditComponent },
   directives: { waves },
   mixins: [agentItem],
   data() {
@@ -205,10 +195,8 @@ export default {
       wifiSet: {},
       tempWifi: {},
       temp: {},
-      locateList: [],
       bulkPanelSwitch: false,
       editPanelSwitch: false,
-      controlPanelSwitch: false,
       wifiPanelSwitch: false,
       defaultTabName: 'Config',
       interfaceName: ''
@@ -223,7 +211,7 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      var config = { 'config_list': ['ip_address', 'task_list', 'task_mode', 'wifi'] }
+      var config = { 'config_list': ['ip_address', 'task_list', 'task_mode', 'wifi', 'locate'] }
 
       fetchRobotList()
         .then(response => {
@@ -259,6 +247,7 @@ export default {
             this.deviceList[listIndex]['wifi'] = { 'ssid': splitWifiString[1], 'password': splitWifiString[3] }
             this.deviceList[listIndex]['task_list'] = splitTaskString
             this.deviceList[listIndex]['current_task'] = configItem.task_mode
+            this.deviceList[listIndex]['locate'] = configItem.locate
           }
           this.listLoading = false
         })
@@ -267,18 +256,6 @@ export default {
     // Handle agents selection in table
     handleSelectionChange(val) {
       this.multipleSelection = val
-    },
-
-    // Function for control component
-    handlecontrol(row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.controlPanelSwitch = true
-    },
-    syncLocate(val) {
-      this.locateList[this.temp.Index - 1] = val
-    },
-    dialogShowControl(val) {
-      this.controlPanelSwitch = val
     },
 
     // Function for wifi ap mode component
@@ -395,6 +372,29 @@ export default {
       } else {
         return name
       }
+    },
+    buttonTypeFilter(status) {
+      if (status === 'on') {
+        return 'primary'
+      } else {
+        return ''
+      }
+    },
+    handleLocate(row) {
+      var tempStat = ''
+      if (row.locate === 'off') {
+        tempStat = 'on'
+      } else {
+        tempStat = 'off'
+      }
+      var tempData = { 'device_config_json': { [row.DeviceID]: { 'locate': tempStat }}}
+      this.waitRequest = true
+      setConfigDiff(tempData).then(response => {
+        if (this.responseVarify(response)) {
+          row.locate = tempStat
+          this.waitRequest = false
+        }
+      })
     }
   }
 }
