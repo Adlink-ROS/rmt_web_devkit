@@ -2,16 +2,17 @@
   <div class="app-container">
 
     <div class="filter-container">
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList()">
-        Search
+      <el-button v-waves class="filter-item" type="primary" @click="getList()">
+        <svg-icon icon-class="radar" style="margin-right: 5px" />
+        Scan
       </el-button>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-refresh" style="width: 110px" @click="deviceList=[]">
         Clear
       </el-button>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-location-outline" @click="dialogShowWifi(true)">
+      <el-button v-waves class="filter-item" type="primary" icon="fas el-icon-fa-wifi" @click="dialogShowWifi(true)">
         WiFi mode
       </el-button>
-      <el-button v-show="multipleSelection.length" v-waves class="filter-item" type="primary" icon="el-icon-set-up" @click="dialogShowGroup(true)">
+      <el-button v-show="multipleSelection.length" v-waves class="filter-item" type="primary" icon="fas el-icon-fa-edit" @click="dialogShowGroup(true)">
         Bulk Edit
       </el-button>
     </div>
@@ -57,24 +58,36 @@
       </el-table-column>
       <el-table-column label="Actions" align="center" width="150" class-name="small-padding fixed-width">
         <template #default="{row}">
-          <el-button v-waves type="info" size="mini" @click="handleUpdate(row)">
-            Edit
-          </el-button>
-          <el-button v-waves type="primary" size="mini" @click="handlecontrol(row)">
-            Control
-          </el-button>
+          <el-tooltip effect="light" content="Configuration setting">
+            <el-button v-waves icon="fas el-icon-fa-wrench" type="info" size="mini" @click="handleUpdate(row)" />
+          </el-tooltip>
+          <el-tooltip effect="light" content="Flashing LED on agent device">
+            <el-button v-waves :loading="waitRequest || listLoading" icon="fas el-icon-fa-lightbulb" :type="buttonTypeFilter(row.locate)" size="mini" @click="handleLocate(row)" />
+          </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column label="Task" align="center" width="140" class-name="small-padding fixed-width">
+      <el-table-column label="Task" align="center" width="160" class-name="small-padding fixed-width">
         <template #default="{row}">
-          <el-select :value="row.current_task" placeholder="Task" :loading="listLoading" style="width: 100%" @change="handleTask($event, row)">
-            <el-option
-              v-for="item in row.task_list"
-              :key="item"
-              :label="item"
-              :value="item"
-            />
-          </el-select>
+          <el-popover
+            v-model="popConfirmVisible"
+            trigger="manual"
+            placement="top"
+            width="250"
+          >
+            <p>Click confirm to switch task mode of {{ row.Hostname }} to {{ desiredTask }}</p>
+            <div style="text-align: right; margin: 0">
+              <el-button size="mini" type="text" @click="taskConfirm(false)">cancel</el-button>
+              <el-button size="mini" type="primary" @click="taskConfirm(true)">confirm</el-button>
+            </div>
+            <el-select slot="reference" :value="row.current_task" placeholder="Task" :loading="listLoading" style="width: 100%" @change="handleTask($event, row)">
+              <el-option
+                v-for="item in row.task_list"
+                :key="item"
+                :label="item"
+                :value="item"
+              />
+            </el-select>
+          </el-popover>
         </template>
       </el-table-column>
     </el-table>
@@ -149,13 +162,6 @@
         </el-button>
       </div>
     </el-dialog>
-    <control-component
-      :dialog-show="controlPanelSwitch"
-      :config="temp"
-      :locate="locateList[temp.Index-1]"
-      @dialogShowChange="dialogShowControl"
-      @syncData="syncLocate"
-    />
     <wifi-mode-component
       :dialog-show="wifiPanelSwitch"
       :wifi-set="tempWifi"
@@ -177,13 +183,12 @@ import { fetchRobotList, setConfigDiff, getConfigAll, fetchWifi } from '@/api/ro
 import agentItem from './mixins/agent'
 import waves from '@/directive/waves' // waves directive
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-import ControlComponent from './components/ControlPanel'
 import WifiModeComponent from './components/WiFiMode'
 import BulkEditComponent from './components/BulkEdit'
 
 export default {
   name: 'ComplexTable',
-  components: { Pagination, ControlComponent, WifiModeComponent, BulkEditComponent },
+  components: { Pagination, WifiModeComponent, BulkEditComponent },
   directives: { waves },
   mixins: [agentItem],
   data() {
@@ -202,13 +207,14 @@ export default {
       wifiSet: {},
       tempWifi: {},
       temp: {},
-      locateList: [],
       bulkPanelSwitch: false,
       editPanelSwitch: false,
-      controlPanelSwitch: false,
       wifiPanelSwitch: false,
       defaultTabName: 'Config',
-      interfaceName: ''
+      interfaceName: '',
+      popConfirmVisible: false,
+      taskConfirm: null,
+      desiredTask: ''
     }
   },
   created() {
@@ -220,7 +226,7 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      var config = { 'config_list': ['ip_address', 'task_list', 'task_mode', 'wifi'] }
+      var config = { 'config_list': ['ip_address', 'task_list', 'task_mode', 'wifi', 'locate'] }
 
       fetchRobotList()
         .then(response => {
@@ -256,6 +262,7 @@ export default {
             this.deviceList[listIndex]['wifi'] = { 'ssid': splitWifiString[1], 'password': splitWifiString[3] }
             this.deviceList[listIndex]['task_list'] = splitTaskString
             this.deviceList[listIndex]['current_task'] = configItem.task_mode
+            this.deviceList[listIndex]['locate'] = configItem.locate
           }
           this.listLoading = false
         })
@@ -264,18 +271,6 @@ export default {
     // Handle agents selection in table
     handleSelectionChange(val) {
       this.multipleSelection = val
-    },
-
-    // Function for control component
-    handlecontrol(row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.controlPanelSwitch = true
-    },
-    syncLocate(val) {
-      this.locateList[this.temp.Index - 1] = val
-    },
-    dialogShowControl(val) {
-      this.controlPanelSwitch = val
     },
 
     // Function for wifi ap mode component
@@ -360,18 +355,29 @@ export default {
 
     // Function for task mode request
     handleTask(val, row) {
-      if (confirm(`Click OK to switch task mode of ${row.Hostname} to "${val}"`)) {
-        this.listLoading = true
-        var tempData = { 'device_config_json': { [row.DeviceID]: { 'task_mode': val }}}
-        setConfigDiff(tempData).then(() => {
-          this.listLoading = false
-          row['current_task'] = val
-          this.$message({
-            message: 'Task Launch Success',
-            type: 'success'
-          })
+      this.desiredTask = val
+      this.taskDecision()
+        .then(resolve => {
+          this.taskConfirm = null
+          this.popConfirmVisible = false
+          if (resolve) {
+            this.listLoading = true
+            var tempData = { 'device_config_json': { [row.DeviceID]: { 'task_mode': val }}}
+
+            setConfigDiff(tempData).then(() => {
+              this.listLoading = false
+              row['current_task'] = val
+            })
+          }
         })
-      }
+      this.$forceUpdate()
+    },
+    taskDecision() {
+      this.popConfirmVisible = true
+      const _this = this
+      return new Promise(function(resolve, reject) {
+        _this.taskConfirm = resolve
+      })
     },
 
     cidrToSubnet(bitCount) {
@@ -392,7 +398,50 @@ export default {
       } else {
         return name
       }
+    },
+    buttonTypeFilter(status) {
+      if (status === 'on') {
+        return 'primary'
+      } else {
+        return ''
+      }
+    },
+    handleLocate(row) {
+      var tempStat = ''
+      if (row.locate === 'off') {
+        tempStat = 'on'
+      } else {
+        tempStat = 'off'
+      }
+      var tempData = { 'device_config_json': { [row.DeviceID]: { 'locate': tempStat }}}
+      this.waitRequest = true
+      setConfigDiff(tempData).then(response => {
+        if (this.responseVarify(response)) {
+          row.locate = tempStat
+          this.waitRequest = false
+        }
+      })
     }
   }
 }
 </script>
+
+<style lang="scss">
+// Import Font Awesome 5 Free
+$fa-css-prefix: 'el-icon-fa';
+$fa-font-path: '~@fortawesome/fontawesome-free/webfonts';
+
+@import '~@fortawesome/fontawesome-free/scss/fontawesome.scss';
+@import '~@fortawesome/fontawesome-free/scss/regular.scss';
+@import '~@fortawesome/fontawesome-free/scss/solid.scss';
+@import '~@fortawesome/fontawesome-free/scss/brands.scss';
+
+// Override Element UI's icon font
+.fas {
+  font-family: 'Font Awesome 5 Free' !important;
+}
+
+.fab {
+  font-family: 'Font Awesome 5 Brands' !important;
+}
+</style>

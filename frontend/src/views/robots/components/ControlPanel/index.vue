@@ -16,8 +16,8 @@
             active-value="on"
             inactive-value="off"
           />
-          <el-tooltip effect="light" content="Find ROScube with flashing LED">
-            <el-button :loading="waitRequest" type="primary" style="width: 120px; margin-left:50px" @click="handleLocate()">
+          <el-tooltip effect="light" content="Flashing LED on agent device">
+            <el-button :loading="waitRequest" icon="fas el-icon-fa-lightbulb" type="primary" style="width: 120px; margin-left:50px" @click="handleLocate()">
               Locate
             </el-button>
           </el-tooltip>
