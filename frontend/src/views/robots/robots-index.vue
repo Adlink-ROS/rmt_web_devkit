@@ -69,7 +69,7 @@
       <el-table-column label="Task" align="center" width="160" class-name="small-padding fixed-width">
         <template #default="{row}">
           <el-popover
-            v-model="popConfirmVisible"
+            v-model="popConfirmList[row.Index - 1]"
             trigger="manual"
             placement="top"
             width="250"
@@ -212,7 +212,7 @@ export default {
       wifiPanelSwitch: false,
       defaultTabName: 'Config',
       interfaceName: '',
-      popConfirmVisible: false,
+      popConfirmList: [],
       taskConfirm: null,
       desiredTask: ''
     }
@@ -232,7 +232,7 @@ export default {
         .then(response => {
           this.deviceList = response.data.items
           this.total = response.data.total
-          this.locateList = Array(this.total).fill('off')
+          this.popConfirmList = Array(this.total).fill(false)
         })
         .then(() => getConfigAll(config))
         .then(response => {
@@ -356,10 +356,12 @@ export default {
     // Function for task mode request
     handleTask(val, row) {
       this.desiredTask = val
+      const targetIndex = row.Index - 1
+      this.popConfirmList.splice(targetIndex, 1, true)
       this.taskDecision()
         .then(resolve => {
           this.taskConfirm = null
-          this.popConfirmVisible = false
+          this.popConfirmList.splice(targetIndex, 1, false)
           if (resolve) {
             this.listLoading = true
             var tempData = { 'device_config_json': { [row.DeviceID]: { 'task_mode': val }}}
@@ -370,10 +372,8 @@ export default {
             })
           }
         })
-      this.$forceUpdate()
     },
     taskDecision() {
-      this.popConfirmVisible = true
       const _this = this
       return new Promise(function(resolve, reject) {
         _this.taskConfirm = resolve
