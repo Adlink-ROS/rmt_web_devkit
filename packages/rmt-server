@@ -3,6 +3,10 @@
 version="vx.x.x"
 frontend="my_frontend_name"
 backend="my_backend_name"
+DOCKER_FRONT_ARG=()
+if [[ $VUE_APP_BASE_API ]]; then
+    DOCKER_FRONT_ARG+=("-e VUE_APP_BASE_API=$VUE_APP_BASE_API")
+fi
 if [ "$1" = "stop" ]; then
     echo "Stop the RMT server"
     sudo docker stop -t 1 rmt-frontend-container > /dev/null
@@ -10,15 +14,29 @@ if [ "$1" = "stop" ]; then
 elif [ "$1" = "start" ]; then
     echo "Start the RMT server"
     # Use port 9527
-    sudo docker run -d -p 9527:9527 --rm --name rmt-frontend-container ${frontend}:${version} > /dev/null
+    sudo docker run -d -p 9527:9527 --rm \
+                    ${DOCKER_FRONT_ARG[@]} \
+                    --name rmt-frontend-container \
+                    ${frontend}:${version} > /dev/null
     # Use port 8080
-    sudo docker run -d --privileged --volume /var/run/dbus:/var/run/dbus --network=host --rm --name rmt-backend-container ${backend}:${version} > /dev/null
+    sudo docker run -d --privileged \
+                    --volume /var/run/dbus:/var/run/dbus \
+                    --network=host --rm \
+                    --name rmt-backend-container \
+                    ${backend}:${version} > /dev/null
 elif [ "$1" = "restart" ]; then
     echo "Restart the RMT server"
     sudo docker stop -t 1 rmt-frontend-container > /dev/null
     sudo docker stop -t 1 rmt-backend-container > /dev/null
-    sudo docker run -d -p 9527:9527 --rm --name rmt-frontend-container ${frontend}:${version} > /dev/null
-    sudo docker run -d --privileged --volume /var/run/dbus:/var/run/dbus --network=host --rm --name rmt-backend-container ${backend}:${version} > /dev/null
+    sudo docker run -d -p 9527:9527 --rm \
+                    ${DOCKER_FRONT_ARG[@]} \
+                    --name rmt-frontend-container \
+                    ${frontend}:${version} > /dev/null
+    sudo docker run -d --privileged \
+                    --volume /var/run/dbus:/var/run/dbus \
+                    --network=host --rm \
+                    --name rmt-backend-container \
+                    ${backend}:${version} > /dev/null
 elif [ "$1" = "status" ]; then
     sudo echo -n "RMT server status: "
     frontend=`sudo docker ps -f status=running -f name=rmt-frontend-container --format "{{.Names}}"`
