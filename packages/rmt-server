@@ -8,6 +8,9 @@ if [[ $VUE_APP_BASE_API ]]; then
     DOCKER_FRONT_ARG+=("-e VUE_APP_BASE_API=$VUE_APP_BASE_API")
 fi
 DOCKER_BACK_ARG=()
+if [[ $RMT_CONFIG ]] && [[ -f $RMT_CONFIG ]]; then
+    DOCKER_BACK_ARG+=("-e RMT_CONFIG=/tmp/rmt.conf")
+fi
 
 function stop_docker() {
     sudo docker stop -t 1 rmt-frontend-container > /dev/null
@@ -27,6 +30,9 @@ function start_docker() {
                     ${DOCKER_BACK_ARG[@]} \
                     --name rmt-backend-container \
                     ${backend}:${version} > /dev/null
+    if [[ $RMT_CONFIG ]] && [[ -f $RMT_CONFIG ]]; then
+        sudo docker cp $RMT_CONFIG rmt-backend-container:/tmp/rmt.conf
+    fi
 }
 
 if [ "$1" = "stop" ]; then
