@@ -26,6 +26,7 @@ sudo apt-get install -y nodejs
 
 ```bash
 cd $HOME/rmt_web_devkit/frontend
+git config --global url."https://".insteadOf git://
 npm install
 ```
 
